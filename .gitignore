@@ -14,3 +14,6 @@ env/
 
 # macOS
 .DS_Store
+# ignore generated thumbnails and raw images
+thumbs/
+static/images/
