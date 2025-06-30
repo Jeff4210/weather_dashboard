@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Home – GOES-19 Dashboard{% endblock %}
+
+{% block content %}
+
+  <div class="region-grid">
+    {% for section in sections %}
+      <article class="item">
+        <a href="{{ section.link }}">
+          <div class="img-frame">
+            <img src="{{ section.thumb }}" alt="{{ section.label }}">
+          </div>
+          <h2>{{ section.label }}</h2>
+        </a>
+      </article>
+    {% endfor %}
+  </div>
+{% endblock %}

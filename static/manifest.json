@@ -1,0 +1,29 @@
+{
+  "generated": "2025-06-25T02:17:20.777498-04:00",
+  "sections": [
+    {
+      "region": "m1",
+      "label": "Meso-1 (M1)",
+      "clean": {
+        "path": "m1/fc/2025-06-24/GOES19_M1_20250624T013724Z_FC_clean.jpg",
+        "time": "2025-06-23 09:38 PM"
+      },
+      "map": {
+        "path": "m1/fc/2025-06-24/GOES19_M1_20250624T013724Z_FC_map.jpg",
+        "time": "2025-06-23 09:38 PM"
+      }
+    },
+    {
+      "region": "m2",
+      "label": "Meso-2 (M2)",
+      "clean": {
+        "path": "m2/fc/2025-06-24/GOES19_M2_20250624T013754Z_FC_clean.jpg",
+        "time": "2025-06-23 09:39 PM"
+      },
+      "map": {
+        "path": "m2/fc/2025-06-24/GOES19_M2_20250624T013754Z_FC_map.jpg",
+        "time": "2025-06-23 09:39 PM"
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ region_name }} – GOES-19 Dashboard{% endblock %}
+
+{% block content %}
+  <div class="action-container">
+    <!-- Home on the left -->
+    <a href="{{ url_for('index') }}" class="home-btn">Home</a>
+
+    <!-- Map/Enhanced on the right -->
+    <div class="action-buttons">
+      <button id="map-all" class="toggle-btn">Map</button>
+      <button id="enh-all" class="toggle-btn">Enhanced</button>
+    </div>
+  </div>
+
+  <div class="region-grid">
+    {% for f in files_info %}
+      <article class="item">
+        <h2>{{ f.display }}</h2>
+        <div class="img-frame">
+          <img
+            src="{{ f.clean.url }}"
+            alt="{{ f.display }}"
+            data-clean-src="{{ f.clean.url }}"
+            data-map-src="{{ f.map.url if f.map else f.clean.url }}"
+            data-enh-clean-src="{{ f.enh_clean.url if f.enh_clean else '' }}"
+            data-enh-map-src="{{ f.enh_map.url if f.enh_map else '' }}"
+          >
+        </div>
+        <div class="time">{{ f.clean.time }}</div>
+      </article>
+    {% endfor %}
+  </div>
+{% endblock %}

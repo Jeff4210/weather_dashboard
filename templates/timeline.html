@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ display }} Timeline – {{ region_name }}{% endblock %}
+{% block content %}
+  <div class="action-container">
+    <a href="{{ url_for('region_page', region=region) }}" class="home-btn">← Back</a>
+    <div class="action-buttons">
+      <button id="map-all" class="toggle-btn">Map</button>
+      <button id="enh-all" class="toggle-btn">Enhanced</button>
+    </div>
+  </div>
+
+  <div class="scrubber">
+    <label for="time-slider">Time:</label>
+    <input type="range" id="time-slider" step="1">
+    <span id="time-label"></span>
+  </div>
+
+  <div class="region-grid">
+    <article class="item" data-index="0">
+      <h2>{{ display }}</h2>
+      <div class="img-frame">
+        <img id="timeline-img"
+             src="{{ history[-1].clean.url }}"
+             alt="{{ display }}"
+             data-history='{{ history|tojson }}'>
+      </div>
+      <div class="time" id="tile-time">{{ history[-1].time }}</div>
+    </article>
+  </div>
+{% endblock %}
