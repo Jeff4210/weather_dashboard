@@ -20,21 +20,81 @@ a {
 /* ─── headers & layout ───────────────────────────────────────────── */
 header {
   text-align: center;
-  padding: 1rem 0;
+  padding: 2rem 0;       /* more vertical breathing room */
+  font-size: 2.5rem;       /* increase the text size */
+  font-weight: bold;     /* make it stand out */
+  color: #DADFE7;           /* optional: give it a splash of color */
 }
 main {
   padding: 0 1rem 2rem;
 }
-
-/* ─── the 4-column grid for your index & region pages ──────────── */
-.index-grid,
-.region-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
+/* Home‐page grid: one row, centered */
+.index-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem 0;
 }
 
+/* Each section (thumbnail + label) */
+.index-grid .index-section {
+  text-align: center;
+}
+
+/* Thumbnail images: fixed smaller size, smooth hover pop */
+.index-grid .index-section img {
+  width: 220px;
+  height: auto;
+  border-radius: 8px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Hover effect: scale up and slight shadow */
+.index-grid .index-section img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+/* Section labels under images */
+.index-grid .index-section .label {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #00bfff;
+}
+/* Make each home-page “item” a fixed 220px flex block so they truly center */
+.index-grid .item {
+  flex: 0 0 220px;      /* don’t grow, don’t shrink, always 220px wide */
+  margin: 0;            /* clear any auto margins */
+}
+/* home-page only: make each card 300px wide */
+.index-grid .index-section {
+  flex: 0 0 400px;    /* fixed 300px width */
+}
+
+/* home-page only: bump image width to match */
+.index-grid .index-section img {
+  width: 400px;
+}
+/* ensure the grid container really only wraps its content */
+.index-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem 0;
+  width: auto;          /* don’t stretch to 100% of parent */
+  margin: 0 auto;       /* if you need extra centering in a wider context */
+}
+/* ─── the 4-column grid for your region pages ──────────── */
+ .region-grid {
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   gap: 1rem;
+   margin-top: 1rem;
+ }
 /* ─── grid items ─────────────────────────────────────────────────── */
 .index-grid .item,
 .region-grid .item {
@@ -95,7 +155,13 @@ main {
   font-weight: bold;
   background: transparent;
 }
-
+/* in static/main.css (or wherever you keep your global styles) */
+.explore-title {
+  text-align: left;       /* center it horizontally */
+  color: #D5D8DC;           /* pick any hex/RGB you like */
+  font-size: 1.5rem;          /* bump up the size if you want */
+  margin: 3rem 0;         /* vertical spacing above/below */
+}
 /* ─── Map / Enhanced toggle buttons ─────────────────────────────── */
 .action-container {
   display: flex;
@@ -116,21 +182,54 @@ main {
   background: #00c0ff;
   border-radius: 999px;
   color: #000;
-  font-weight: bold;
 }
+/* Bigger, bolder text in your buttons */
+/*.action-container .toggle-btn,
+/*.action-container .home-btn {
+/*  font-size: 1.05rem;        /* increase from default */
+/*  font-weight: 600;         /* semi-bold */
+/*  line-height: 1.2;         /* tighten up vertical centering */
+/*  letter-spacing: 0.5px;    /* small tracking boost */
+/*  text-transform: uppercase;/* optional, for more punch */
+/*}
 /* ── Toggle buttons hover “pop” ───────────────────────────────────────────── */
-.action-container button,
-.action-container .btn {
+/*.action-container button,
+/*.action-container .btn {
   /* make sure you have a transition on transform (and optionally shadow) */
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
+/*  transition: transform 0.15s ease, box-shadow 0.15s ease;
+/*}
 
 /* on hover, lift & scale them just a hair */
-.action-container button:hover,
+/*.action-container button:hover,
 .action-container .btn:hover {
-  transform: scale(1.05);
+  transform: scale(1.15);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+/* 1) Base (inactive) state — outlined like “Home” */
+.action-container .toggle-btn {
+  border: 2px solid #00c0ff;
+  background: transparent;
+  color: #00c0ff;
+  font-size: 1.05rem; 
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+              background-color 0.15s ease, color 0.15s ease;
+}
+
+/* 2) Active state — filled like you have now */
+.action-container .toggle-btn.active {
+  border-color: transparent;
+  background-color: #00c0ff;
+  color: #000;
+}
+
+/* 3) Hover “pop” for both states */
+.action-container .toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}	
 /* ─── explore (single-channel) page scrubber & image ───────────── */
 .explore-image-container {
   max-width: 700px;

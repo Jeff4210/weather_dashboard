@@ -1,17 +1,37 @@
-{% extends "base.html" %}
-{% block title %}Home – GOES-19 Dashboard{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Blue Marble 🔭🛰️</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" />
+  </head>
+  <body>
+    <header class="index-header">
+      Blue Marble 🔭🛰️
+    </header>
 
-{% block content %}
-  <div class="gallery">
-    {% for section in sections %}
-      <article class="gallery-item">
-        <a href="{{ section.link }}">
-          <div class="gallery-thumb">
-            <img src="{{ section.thumb }}" alt="{{ section.label }}">
-          </div>
-          <h2>{{ section.label }}</h2>
-        </a>
-      </article>
-    {% endfor %}
-  </div>
-{% endblock %}
+    <main>
+      {% if sections %}
+        <div class="index-grid">
+          {% for sec in sections %}
+            <div class="item index-section">
+              <div class="img-frame">
+                <a href="{{ sec.link }}">
+                  <img src="{{ sec.thumb }}" alt="{{ sec.label }}" />
+                </a>
+              </div>
+              <h2 class="label">
+                <a href="{{ sec.link }}">{{ sec.label }}</a>
+              </h2>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="text-align:center; color:#888; margin-top:2rem;">
+          No imagery available right now.
+        </p>
+      {% endif %}
+    </main>
+  </body>
+</html>
