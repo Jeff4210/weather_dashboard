@@ -162,16 +162,20 @@ def make_thumb(src_path, dst_base, size, quality):
 def index():
     manifest = get_manifest()
     sections = []
+
     for region_slug, region_title in REGION_TITLES.items():
-        # manifest[region_slug] is now a dict mapping slug→entry
+        # channels is a dict: channel_slug → [ frame1, frame2, ... ]
         channels = manifest.get(region_slug, {})
-        # grab the False-Color (“fc”) entry directly
-        fc_entry = channels.get("fc")
-        if not fc_entry or "clean" not in fc_entry:
+        fc_history = channels.get("fc")
+
+        # skip if no FC history
+        if not fc_history:
             continue
 
-        # use the thumbnail URL, not the full image
-        thumb_url = fc_entry["clean"]["thumb"]
+        # pick the newest frame (last in list)
+        latest = fc_history[-1]
+        # in the new manifest, latest["clean"] is a URL string
+        thumb_url = latest["clean"]
 
         sections.append({
             "link":  url_for("region_page", region=region_slug),
@@ -180,7 +184,6 @@ def index():
         })
 
     return render_template("index.html", sections=sections)
-
 # ─── Serve master images ───────────────────────────────────────────────────────
 @app.route("/images/<region>/<channel>/<date>/<filename>")
 def serve_image(region, channel, date, filename):
