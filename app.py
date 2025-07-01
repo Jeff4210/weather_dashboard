@@ -42,19 +42,19 @@ def build_manifest():
     """
     Walk the output directory tree and build a manifest of all
     available thumbnail variants, grouped by timestamp, per region/channel.
-    Returns the new manifest dict and atomically swaps it into _manifest.
+    Atomically swaps it into _manifest and returns it.
     """
     new = {}
 
     for region in REGION_TITLES:
         region_dict = {}
+
         for channel in CHANNEL_NAMES:
             base_dir = os.path.join(OUTPUT_BASE, region, channel)
             if not os.path.isdir(base_dir):
-                # no data for this channel
                 continue
 
-            # We'll accumulate one dict per timestamp
+            # one bucket per timestamp
             ts_buckets = defaultdict(lambda: {
                 "clean": None,
                 "map": None,
@@ -63,52 +63,65 @@ def build_manifest():
                 "time": None
             })
 
-            # scan every date subfolder
+            # scan every date folder
             for date in sorted(os.listdir(base_dir)):
                 date_dir = os.path.join(base_dir, date)
                 if not os.path.isdir(date_dir) or not re.match(r"\d{4}-\d{2}-\d{2}", date):
                     continue
 
                 for fn in os.listdir(date_dir):
-                    # Expect names like GOES19_FD_ch02_20250629T133021Z_clean.jpg
-                    m = re.match(
-                        rf".*_{channel}_(\d{{8}}T\d{{6}}Z)_(clean|map|enhanced_clean|enhanced_map)\.jpg$",
-                        fn
-                    )
+                    fn_lc = fn.lower()
+
+                    # pick regex by channel
+                    if channel == "fc":
+                        # files named like …_20250628T120020Z_fc_clean.jpg
+                        pattern = (
+                            rf".*_(\d{{8}}t\d{{6}}z)_fc_"
+                            r"(clean|map|enhanced_clean|enhanced_map)\.jpg$"
+                        )
+                    else:
+                        # files named like …_ch02_20250628T120020Z_clean.jpg
+                        pattern = (
+                            rf".*_{channel}_(\d{{8}}t\d{{6}}z)_"
+                            r"(clean|map|enhanced_clean|enhanced_map)\.jpg$"
+                        )
+
+                    m = re.match(pattern, fn_lc)
                     if not m:
                         continue
 
                     ts, variant = m.groups()
-                    url_path = f"/thumbnails_large/{region}/{channel}/{date}/{fn}"
 
+                    # build the thumbnail URL
+                    url_path = f"/thumbnails_large/{region}/{channel}/{date}/{fn}"
                     bucket = ts_buckets[ts]
                     bucket[variant] = url_path
 
-                    # if we haven't set human time yet, do it now
+                    # parse & set human time once per timestamp
                     if bucket["time"] is None:
-                        dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                        # convert to your local zone if you like:
-                        dt = dt.astimezone(ZoneInfo("America/New_York"))
+                        # uppercase the Z and parse with strptime
+                        ts_uc = ts.upper()  # e.g. "20250628T120020Z"
+                        dt = datetime.datetime.strptime(ts_uc, "%Y%m%dT%H%M%SZ")
+                        # treat as UTC, convert to local
+                        dt = dt.replace(tzinfo=datetime.timezone.utc) \
+                               .astimezone(ZoneInfo("America/New_York"))
                         bucket["time"] = dt.strftime("%Y-%m-%d %I:%M %p")
 
-            # turn our buckets into a sorted list by timestamp
-            entries = []
-            for ts in sorted(ts_buckets.keys()):
-                entries.append(ts_buckets[ts])
-
+            # convert each bucket into a sorted list
+            entries = [ts_buckets[t] for t in sorted(ts_buckets)]
             if entries:
                 region_dict[channel] = entries
 
         if region_dict:
             new[region] = region_dict
 
-    # swap it in
+    # swap into the global manifest under lock
     with _manifest_lock:
         _manifest.clear()
         _manifest.update(new)
 
     return new
-
+# ─── Get Manifest ─────────────────────────────────────────────────────────────
 def get_manifest():
     """Thread-safe snapshot of the in-memory manifest."""
     with _manifest_lock:
