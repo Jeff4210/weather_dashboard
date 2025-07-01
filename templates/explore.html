@@ -1,86 +1,103 @@
 {% extends "base.html" %}
+{% block title %}Explore {{ channel_name }} – {{ region_name }}{% endblock %}
 
 {% block content %}
-
-  <main>
-    <div class="action-container">
-      <a href="{{ url_for('region_page', region=region_slug) }}" class="btn back-btn">← Back</a>
-      <div class="toggle-buttons">
-        <button id="map-btn" class="btn toggle-btn">Map</button>
-        <button id="enh-btn" class="btn toggle-btn">Enhanced</button>
-      </div>
+<main>
+  <div class="action-container">
+    <a href="{{ url_for('region_page', region=region_slug) }}" class="btn back-btn">← Back</a>
+    <div class="toggle-buttons">
+      <button id="map-btn" class="btn toggle-btn">Map</button>
+      <button id="enh-btn" class="btn toggle-btn">Enhanced</button>
     </div>
+  </div>
 
-    <h2 class="explore-title">
-     {{ channel_name }}
-    </h2>
+  <h2 class="explore-title">{{ channel_name }} in {{ region_name }}</h2>
 
-    <div class="explore-image-container">
-     <a id="scrub-link" href="{{ history[0].url }}" target="_blank">
+  <div class="explore-image-container">
+    <!-- href="#" initially; JS will replace it with the master URL -->
+    <a id="scrub-link" href="#" target="_blank" rel="noopener">
       <img
         id="scrub-img"
         src="{{ history[0].clean }}"
         alt="{{ history[0].time }}"
         loading="lazy"
-        data-clean-src="{{ history[0].clean }}"
-        data-map-src="{{ history[0].map or '' }}"
-        data-enh-clean-src="{{ history[0].enhanced_clean or '' }}"
-        data-enh-map-src="{{ history[0].enhanced_map or '' }}">
-     </a>
-    </div>
+      >
+    </a>
+  </div>
 
-    <div class="scrubber">
-      <input id="time-range" type="range" min="0" max="{{ history|length - 1 }}" value="0">
-      <div id="time-label">{{ history[0].time }}</div>
-    </div>
-  </main>
+  <div class="scrubber">
+    <input
+      id="time-range"
+      type="range"
+      min="0"
+      max="{{ history|length - 1 }}"
+      value="0"
+    >
+    <div id="time-label">{{ history[0].time }}</div>
+  </div>
+</main>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // 1) pull in the raw history array
+  // 1) Pull in your history array
   const history = {{ history|tojson }};
-  
-  // 2) find all the DOM nodes we need
-  const img     = document.getElementById('scrub-img');
-  const range   = document.getElementById('time-range');
-  const label   = document.getElementById('time-label');
-  const mapBtn  = document.getElementById('map-btn');
-  const enhBtn  = document.getElementById('enh-btn');
 
-  // 3) our two toggle flags
+  // 2) Cache DOM nodes
+  const img    = document.getElementById('scrub-img');
+  const link   = document.getElementById('scrub-link');
+  const range  = document.getElementById('time-range');
+  const label  = document.getElementById('time-label');
+  const mapBtn = document.getElementById('map-btn');
+  const enhBtn = document.getElementById('enh-btn');
+
+  // 3) Toggle state
   let mapOn = false, enhOn = false;
 
+  // 4) Helper to turn a large-thumb URL into its master image URL
+  function thumbToMaster(thumbUrl) {
+    return thumbUrl.replace('/thumbnails_large/', '/images/');
+  }
+
+  // 5) Main update function
   function updateImage() {
-    // pick the current frame
     const frame = history[+range.value];
     label.textContent = frame.time;
 
-    // decide which URL to use
-    let url = frame.clean; 
-    if      (mapOn  && enhOn  && frame.enhanced_map)   url = frame.enhanced_map;
-    else if (mapOn  &&         frame.map)              url = frame.map;
-    else if (        enhOn  && frame.enhanced_clean)   url = frame.enhanced_clean;
+    // default to clean thumb
+    let thumbUrl  = frame.clean;
 
-    img.src = url;
+    // apply toggles
+    if (mapOn && enhOn && frame.enhanced_map) {
+      thumbUrl = frame.enhanced_map;
+    }
+    else if (mapOn && frame.map) {
+      thumbUrl = frame.map;
+    }
+    else if (enhOn && frame.enhanced_clean) {
+      thumbUrl = frame.enhanced_clean;
+    }
+
+    // set the thumbnail
+    img.src = thumbUrl;
+    // set the link href to the corresponding master image
+    link.href = thumbToMaster(thumbUrl);
   }
 
-  // 4) wire up the controls
+  // 6) Wire up controls
   mapBtn.addEventListener('click', () => {
     mapOn = !mapOn;
     mapBtn.classList.toggle('active', mapOn);
     updateImage();
   });
-
   enhBtn.addEventListener('click', () => {
     enhOn = !enhOn;
     enhBtn.classList.toggle('active', enhOn);
     updateImage();
   });
-
   range.addEventListener('input', updateImage);
 
-  // 5) initialise on load
+  // 7) Initialize on page load
   document.addEventListener('DOMContentLoaded', updateImage);
 </script>
 {% endblock %}
