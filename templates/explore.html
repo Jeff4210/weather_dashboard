@@ -16,6 +16,7 @@
     </h2>
 
     <div class="explore-image-container">
+     <a id="scrub-link" href="{{ history[0].url }}" target="_blank">
       <img
         id="scrub-img"
         src="{{ history[0].clean }}"
@@ -24,8 +25,8 @@
         data-clean-src="{{ history[0].clean }}"
         data-map-src="{{ history[0].map or '' }}"
         data-enh-clean-src="{{ history[0].enhanced_clean or '' }}"
-        data-enh-map-src="{{ history[0].enhanced_map or '' }}"
-      >
+        data-enh-map-src="{{ history[0].enhanced_map or '' }}">
+     </a>
     </div>
 
     <div class="scrubber">
@@ -36,41 +37,50 @@
 {% endblock %}
 
 {% block scripts %}
-  <script>
-    // Inject the whole history into JS
-    const history = {{ history|tojson }};
+<script>
+  // 1) pull in the raw history array
+  const history = {{ history|tojson }};
+  
+  // 2) find all the DOM nodes we need
+  const img     = document.getElementById('scrub-img');
+  const range   = document.getElementById('time-range');
+  const label   = document.getElementById('time-label');
+  const mapBtn  = document.getElementById('map-btn');
+  const enhBtn  = document.getElementById('enh-btn');
 
-    const img     = document.getElementById('scrub-img');
-    const range   = document.getElementById('time-range');
-    const label   = document.getElementById('time-label');
-    const mapBtn  = document.getElementById('map-btn');
-    const enhBtn  = document.getElementById('enh-btn');
+  // 3) our two toggle flags
+  let mapOn = false, enhOn = false;
 
-    let mapOn = false, enhOn = false;
+  function updateImage() {
+    // pick the current frame
+    const frame = history[+range.value];
+    label.textContent = frame.time;
 
-    function updateImage() {
-      const frame = history[ +range.value ];
-      label.textContent = frame.time;
+    // decide which URL to use
+    let url = frame.clean; 
+    if      (mapOn  && enhOn  && frame.enhanced_map)   url = frame.enhanced_map;
+    else if (mapOn  &&         frame.map)              url = frame.map;
+    else if (        enhOn  && frame.enhanced_clean)   url = frame.enhanced_clean;
 
-      // pick variant in priority order:
-      //  both -> enhanced_map
-      //  map only -> map
-      //  enh only -> enhanced_clean
-      //  none -> clean
-      let url = frame.clean;
-      if      (mapOn && enhOn && frame.enhanced_map)   url = frame.enhanced_map;
-      else if (mapOn &&         frame.map)             url = frame.map;
-      else if (        enhOn && frame.enhanced_clean) url = frame.enhanced_clean;
+    img.src = url;
+  }
 
-      img.src = url;
-    }
+  // 4) wire up the controls
+  mapBtn.addEventListener('click', () => {
+    mapOn = !mapOn;
+    mapBtn.classList.toggle('active', mapOn);
+    updateImage();
+  });
 
-    // wire up buttons
-    mapBtn .addEventListener('click', ()=>{ mapOn = !mapOn; mapBtn.classList.toggle('active', mapOn);  updateImage(); });
-    enhBtn .addEventListener('click', ()=>{ enhOn = !enhOn; enhBtn.classList.toggle('active', enhOn);  updateImage(); });
-    range  .addEventListener('input', updateImage);
+  enhBtn.addEventListener('click', () => {
+    enhOn = !enhOn;
+    enhBtn.classList.toggle('active', enhOn);
+    updateImage();
+  });
 
-    // init
-    document.addEventListener('DOMContentLoaded', updateImage);
-  </script>
+  range.addEventListener('input', updateImage);
+
+  // 5) initialise on load
+  document.addEventListener('DOMContentLoaded', updateImage);
+</script>
 {% endblock %}

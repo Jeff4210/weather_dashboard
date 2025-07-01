@@ -28,27 +28,11 @@ header {
 main {
   padding: 0 1rem 2rem;
 }
-/* Home‐page grid: one row, centered */
-.index-grid {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: 2rem;
-  padding: 2rem 0;
-}
-
 /* Each section (thumbnail + label) */
 .index-grid .index-section {
   text-align: center;
 }
 
-/* Thumbnail images: fixed smaller size, smooth hover pop */
-.index-grid .index-section img {
-  width: 220px;
-  height: auto;
-  border-radius: 8px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
 
 /* Hover effect: scale up and slight shadow */
 .index-grid .index-section img:hover {
@@ -63,6 +47,7 @@ main {
   font-size: 1.1rem;
   font-weight: 600;
   color: #00bfff;
+}
 }
 /* Make each home-page “item” a fixed 220px flex block so they truly center */
 .index-grid .item {
@@ -81,7 +66,7 @@ main {
 /* ensure the grid container really only wraps its content */
 .index-grid {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 2rem;
   padding: 2rem 0;
@@ -347,4 +332,24 @@ main {
   background: transparent;
   border-color: transparent;
   color: transparent;
+}
+/* ─── mobile tweak: fewer columns & bigger tiles on small screens ───────── */
+@media (max-width: 600px) {
+  /* drop to 2 columns (or 1 if you prefer) */
+  .region-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  /* enlarge each card so the images aren’t tiny */
+  .region-grid .item {
+    /* add some vertical padding and let the grid rows auto-size */
+    padding: 0.5rem 0;
+  }
+
+  /* bump up the img-frame so it’s a bit taller */
+  .region-grid .item .img-frame {
+    padding-top: 120%; /* 1.2:1 aspect ratio instead of square */
+  }
 }

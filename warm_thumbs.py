@@ -3,7 +3,7 @@ import os
 import glob
 from tqdm import tqdm
 
-from app import app, OUTPUT_BASE, THUMB_BASE, THUMB_BASE_LRG, make_thumb
+from app import app, OUTPUT_BASE, THUMB_BASE, LARGE_THUMB_BASE, make_thumb
 
 # thumbnail specs
 SMALL_SIZE    = (300, 300)
@@ -25,7 +25,7 @@ def regen_thumbs():
 
     # ensure both thumb directories exist
     os.makedirs(THUMB_BASE, exist_ok=True)
-    os.makedirs(THUMB_BASE_LRG, exist_ok=True)
+    os.makedirs(LARGE_THUMB_BASE, exist_ok=True)
 
     for src in tqdm(sources, desc="Generating thumbnails", unit="img"):
         # relative path under OUTPUT_BASE
@@ -40,10 +40,10 @@ def regen_thumbs():
                 print(f"❌ Small-thumb failed for {src!r}: {e}")
 
         # large thumb
-        dst_large = os.path.join(THUMB_BASE_LRG, rel)
+        dst_large = os.path.join(LARGE_THUMB_BASE, rel)
         if not os.path.exists(dst_large) or os.path.getmtime(dst_large) < os.path.getmtime(src):
             try:
-                make_thumb(src, THUMB_BASE_LRG, LARGE_SIZE, LARGE_QUALITY)
+                make_thumb(src, LARGE_THUMB_BASE, LARGE_SIZE, LARGE_QUALITY)
             except Exception as e:
                 print(f"❌ Large-thumb failed for {src!r}: {e}")
 
