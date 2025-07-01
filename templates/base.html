@@ -2,58 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{% block title %}GOES-19 Dashboard{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
 <body>
-  <header>
-    <h1><a href="{{ url_for('index') }}">GOES-19 Dashboard</a></h1>
+<header style="font-size: 2.5rem; padding: 1rem; font-weight: bold;">
+    Blue Marble 🛰️
   </header>
-
   <main>
     {% block content %}{% endblock %}
   </main>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const btnMap = document.getElementById('map-all');
-  const btnEnh = document.getElementById('enh-all');
-  const imgs   = document.querySelectorAll('.img-frame img');
 
-  function updateImages() {
-    const mapOn = btnMap.classList.contains('active');
-    const enhOn = btnEnh.classList.contains('active');
 
-    imgs.forEach(img => {
-      let src = img.dataset.cleanSrc;
-
-      if (mapOn && enhOn) {
-        // both toggles → show enhanced‐map if available, else map, else clean
-        src = img.dataset.enhMapSrc
-           || img.dataset.mapSrc
-           || img.dataset.cleanSrc;
-      } else if (mapOn) {
-        // only map → show map if available
-        src = img.dataset.mapSrc || img.dataset.cleanSrc;
-      } else if (enhOn) {
-        // only enhanced → show enhanced clean if available
-        src = img.dataset.enhCleanSrc || img.dataset.cleanSrc;
-      }
-
-      img.src = src;
-    });
-  }
-
-  // wire up each button to toggle its own "active" class and then refresh
-  btnMap.addEventListener('click', () => {
-    btnMap.classList.toggle('active');
-    updateImages();
-  });
-  btnEnh.addEventListener('click', () => {
-    btnEnh.classList.toggle('active');
-    updateImages();
-  });
-});
-</script>
+  {# Here’s where per-page scripts go #}
+  {% block scripts %}{% endblock %}
 </body>
 </html>

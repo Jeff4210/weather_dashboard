@@ -2,7 +2,14 @@
 import os
 import glob
 from tqdm import tqdm
-from app import app, OUTPUT_BASE, THUMB_BASE, make_thumb
+
+from app import app, OUTPUT_BASE, THUMB_BASE, THUMB_BASE_LRG, make_thumb
+
+# thumbnail specs
+SMALL_SIZE    = (300, 300)
+SMALL_QUALITY = 75
+LARGE_SIZE    = (800, 800)
+LARGE_QUALITY = 90
 
 def collect_sources():
     """Yield every image file under OUTPUT_BASE."""
@@ -13,30 +20,34 @@ def collect_sources():
                 yield os.path.join(root, fname)
 
 def regen_thumbs():
-    # Gather all images first so tqdm knows the total length
+    # gather all sources so tqdm can show total
     sources = list(collect_sources())
 
-    # Ensure the thumb base exists
+    # ensure both thumb directories exist
     os.makedirs(THUMB_BASE, exist_ok=True)
+    os.makedirs(THUMB_BASE_LRG, exist_ok=True)
 
-    # Iterate with a progress bar
     for src in tqdm(sources, desc="Generating thumbnails", unit="img"):
-        # compute the target path under THUMB_BASE
+        # relative path under OUTPUT_BASE
         rel = os.path.relpath(src, OUTPUT_BASE)
-        dst = os.path.join(THUMB_BASE, rel)
 
-        # skip if thumbnail already exists and is newer than the source
-        if os.path.exists(dst) and os.path.getmtime(dst) >= os.path.getmtime(src):
-            continue
+        # small thumb
+        dst_small = os.path.join(THUMB_BASE, rel)
+        if not os.path.exists(dst_small) or os.path.getmtime(dst_small) < os.path.getmtime(src):
+            try:
+                make_thumb(src, THUMB_BASE, SMALL_SIZE, SMALL_QUALITY)
+            except Exception as e:
+                print(f"❌ Small-thumb failed for {src!r}: {e}")
 
-        # otherwise generate it
-        try:
-            make_thumb(src)
-        except Exception as e:
-            # fallback: print error and keep going
-            print(f"❌ Failed {src!r}: {e}")
+        # large thumb
+        dst_large = os.path.join(THUMB_BASE_LRG, rel)
+        if not os.path.exists(dst_large) or os.path.getmtime(dst_large) < os.path.getmtime(src):
+            try:
+                make_thumb(src, THUMB_BASE_LRG, LARGE_SIZE, LARGE_QUALITY)
+            except Exception as e:
+                print(f"❌ Large-thumb failed for {src!r}: {e}")
 
 if __name__ == "__main__":
-    # enter Flask context so make_thumb (and url_for/current_app) will work
+    # need Flask context for make_thumb's logger
     with app.app_context():
         regen_thumbs()

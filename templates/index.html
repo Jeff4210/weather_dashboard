@@ -2,12 +2,11 @@
 {% block title %}Home – GOES-19 Dashboard{% endblock %}
 
 {% block content %}
-
-  <div class="region-grid">
+  <div class="gallery">
     {% for section in sections %}
-      <article class="item">
+      <article class="gallery-item">
         <a href="{{ section.link }}">
-          <div class="img-frame">
+          <div class="gallery-thumb">
             <img src="{{ section.thumb }}" alt="{{ section.label }}">
           </div>
           <h2>{{ section.label }}</h2>

@@ -1,12 +1,13 @@
+{# templates/region.html #}
 {% extends "base.html" %}
-{% block title %}{{ region_name }} – GOES-19 Dashboard{% endblock %}
+
+{% block title %}
+  {{ region_name }} – GOES-19 Dashboard
+{% endblock %}
 
 {% block content %}
   <div class="action-container">
-    <!-- Home on the left -->
     <a href="{{ url_for('index') }}" class="home-btn">Home</a>
-
-    <!-- Map/Enhanced on the right -->
     <div class="action-buttons">
       <button id="map-all" class="toggle-btn">Map</button>
       <button id="enh-all" class="toggle-btn">Enhanced</button>
@@ -19,16 +20,52 @@
         <h2>{{ f.display }}</h2>
         <div class="img-frame">
           <img
-            src="{{ f.clean.url }}"
+            src="{{ f.clean.thumb }}"
             alt="{{ f.display }}"
-            data-clean-src="{{ f.clean.url }}"
-            data-map-src="{{ f.map.url if f.map else f.clean.url }}"
-            data-enh-clean-src="{{ f.enh_clean.url if f.enh_clean else '' }}"
-            data-enh-map-src="{{ f.enh_map.url if f.enh_map else '' }}"
+            loading="lazy"
+            data-clean-src="{{ f.clean.thumb }}"
+            data-map-src="{{ f.map.thumb  |default(f.clean.thumb) }}"
+            data-enh-clean-src="{{ f.enh_clean.thumb |default(f.clean.thumb) }}"
+            data-enh-map-src="{{ f.enh_map.thumb |default(f.map.thumb)|default(f.clean.thumb) }}"
           >
         </div>
         <div class="time">{{ f.clean.time }}</div>
+
+        {# THIS LINK MUST INCLUDE BOTH region_slug AND f.slug #}
+        <a
+          href="{{ url_for('explore', region=region_slug, channel=f.slug) }}"
+          class="explore-btn"
+        >
+          🔍 Explore Timeline
+        </a>
       </article>
     {% endfor %}
   </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const mapBtn = document.getElementById('map-all'),
+        enhBtn = document.getElementById('enh-all'),
+        imgs   = document.querySelectorAll('.region-grid img');
+  let mapOn = false, enhOn = false;
+
+  function updateAll() {
+    imgs.forEach(img => {
+      let src = img.dataset.cleanSrc;
+      if (mapOn && enhOn)      src = img.dataset.enhMapSrc;
+      else if (enhOn)           src = img.dataset.enhCleanSrc;
+      else if (mapOn)           src = img.dataset.mapSrc;
+      img.src = src;
+    });
+    mapBtn.classList.toggle('active', mapOn);
+    enhBtn.classList.toggle('active', enhOn);
+  }
+
+  mapBtn.addEventListener('click', () => { mapOn = !mapOn; updateAll(); });
+  enhBtn.addEventListener('click', () => { enhOn = !enhOn; updateAll(); });
+  updateAll();
+});
+</script>
 {% endblock %}

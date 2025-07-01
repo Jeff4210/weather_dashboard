@@ -1,172 +1,251 @@
-/*───────────────────────────────────────────────────────────────────────────────
-  GLOBAL RESET & BASE STYLES
-───────────────────────────────────────────────────────────────────────────────*/
-* {
+/* ─── reset + base ───────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 body {
   background: #000;
   color: #fff;
   font-family: sans-serif;
   line-height: 1.4;
 }
-
-h1, h2 {
-  color: #0af;
-}
-
 a {
   color: inherit;
   text-decoration: none;
 }
-a:hover {
-  opacity: 0.8;
-}
 
-/*───────────────────────────────────────────────────────────────────────────────
-   HEADER
-───────────────────────────────────────────────────────────────────────────────*/
+/* ─── headers & layout ───────────────────────────────────────────── */
 header {
   text-align: center;
-  padding: 1rem;
+  padding: 1rem 0;
 }
-header h1 {
-  margin: 0;
+main {
+  padding: 0 1rem 2rem;
 }
 
-/*───────────────────────────────────────────────────────────────────────────────
-   GRID LAYOUT
-───────────────────────────────────────────────────────────────────────────────*/
+/* ─── the 4-column grid for your index & region pages ──────────── */
+.index-grid,
 .region-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
-  padding: 1rem;
+  margin-top: 1rem;
 }
 
+/* ─── grid items ─────────────────────────────────────────────────── */
+.index-grid .item,
 .region-grid .item {
   background: #111;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
-/*───────────────────────────────────────────────────────────────────────────────
-   SQUARE IMAGE FRAMES
-───────────────────────────────────────────────────────────────────────────────*/
-.img-frame {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+/* thumbnail container keeps the circles intact */
+.index-grid .item .img-frame,
+.region-grid .item .img-frame {
   position: relative;
+  width: 100%;
+  padding-top: 100%; /* 1:1 aspect ratio */
   overflow: hidden;
 }
-.img-frame img {
+.index-grid .item img,
+.region-grid .item img {
   position: absolute;
   top: 0; left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.2s ease;
-}
-.region-grid .item:hover .img-frame img {
-  transform: scale(1.03);
 }
 
-/*───────────────────────────────────────────────────────────────────────────────
-   TILE CAPTIONS
-───────────────────────────────────────────────────────────────────────────────*/
+/* titles */
+.index-grid .item h2,
 .region-grid .item h2 {
-  padding: 0.75rem;
+  padding: 0.5rem;
+  font-size: 1.1rem;
   text-align: center;
-  font-size: 1rem;
+  background: #111;
+  width: 100%;
 }
 
+/* timestamp or “Explore Timeline” button row */
+.index-grid .item .time,
 .region-grid .item .time {
-  padding-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
   text-align: center;
-  font-size: 0.85rem;
-  color: #bbb;
+  font-size: 0.9rem;
+  background: #111;
 }
 
-/*───────────────────────────────────────────────────────────────────────────────
-   PER-TILE BUTTON LINE (if you ever want it)
-───────────────────────────────────────────────────────────────────────────────*/
-.btn-line {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  flex-wrap: wrap;
-}
-.btn-line a {
-  background: #0af;
-  color: #000;
-  padding: 0.25rem 0.75rem;
-  border-radius: 3px;
-  font-size: 0.85rem;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-.btn-line a:hover {
-  background: #0cf;
+/* pill-shaped “Explore Timeline” links */
+.index-grid .item a.explore-btn,
+.region-grid .item a.explore-btn {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid #00c0ff;
+  border-radius: 999px;
+  color: #00c0ff;
+  font-weight: bold;
+  background: transparent;
 }
 
-/*───────────────────────────────────────────────────────────────────────────────
-   ACTION AREA: Home left, Toggles right
-───────────────────────────────────────────────────────────────────────────────*/
+/* ─── Map / Enhanced toggle buttons ─────────────────────────────── */
 .action-container {
   display: flex;
-  justify-content: space-between;  /* Home left, toggles right */
+  justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  margin-top: 1rem;
 }
-
-/* ─── Home button ───────────────────────────────────────────────────────────── */
-.home-btn {
-  background: none;
-  border: 2px solid #0af;
-  color: #0af;
-  padding: 0.4rem 0.75rem;
+.action-container .home-btn {
+  border: 2px solid #00c0ff;
   border-radius: 999px;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  padding: 0.5rem 1rem;
+  color: #00c0ff;
 }
-.home-btn:hover {
-  background: #0af;
-  color: #000;
-}
-
-/* ─── Container for Map/Enhanced ───────────────────────────────────────────── */
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* ─── Map/Enhanced pills ───────────────────────────────────────────────────── */
-.toggle-btn {
-  background: linear-gradient(135deg, #00bfff, #0066cc);
-  color: #fff;
+.action-container .toggle-btn {
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
   border: none;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.9rem;
-  font-weight: 600;
+  background: #00c0ff;
   border-radius: 999px;
+  color: #000;
+  font-weight: bold;
+}
+/* ── Toggle buttons hover “pop” ───────────────────────────────────────────── */
+.action-container button,
+.action-container .btn {
+  /* make sure you have a transition on transform (and optionally shadow) */
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* on hover, lift & scale them just a hair */
+.action-container button:hover,
+.action-container .btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+/* ─── explore (single-channel) page scrubber & image ───────────── */
+.explore-image-container {
+  max-width: 700px;
+  margin: 1rem auto;
+}
+.explore-image-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+.scrubber-container {
+  max-width: 700px;
+  margin: 1rem auto;
+  text-align: center;
+}
+.scrubber-container input[type="range"] {
+  width: 100%;
+}
+.scrubber-container .scrub-time {
+  font-style: italic;
+  color: #ccc;
+  margin-top: 0.25rem;
+}
+
+/* ─── responsive tweaks ─────────────────────────────────────────── */
+@media (max-width: 400px) {
+  .index-grid,
+  .region-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 400px) {
+  .index-grid,
+  .region-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Smooth scale-up on hover for all thumbnails */
+.img-frame img {
+  transition: transform 0.3s ease;  /* animate any transform */
+}
+
+.item:hover .img-frame img,
+.index-item:hover .thumb-frame img {
+  transform: scale(1.05);          /* grow 5% on hover */
+}
+/* ── Scrubber Container ───────────────────────────────────────────────────── */
+.scrubber {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+/* ── The Range Input Itself ───────────────────────────────────────────────── */
+.scrubber input[type="range"] {
+  -webkit-appearance: none;
+  width: 80%;            /* make it a bit wider */
+  height: 16px;          /* taller track */
+  background: #444;      /* dark track */
+  border-radius: 8px;
+  outline: none;
+  margin: 0;             /* trim extra default margins */
+}
+
+/* ── WebKit/Blink Thumb ────────────────────────────────────────────────────── */
+.scrubber input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;           /* larger thumb */
+  height: 28px;
+  background: #00bfff;   /* bright thumb */
+  border: 3px solid #fff;
+  border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
-  text-transform: uppercase;
+  margin-top: -6px;      /* vertically center over the track */
+  transition: transform 0.15s ease;
 }
-.toggle-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  background: linear-gradient(135deg, #0066cc, #00bfff);
+.scrubber input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
 }
-.toggle-btn.active {
-  background: linear-gradient(135deg, #005fa3, #00a5e6);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+
+/* ── Firefox Thumb ─────────────────────────────────────────────────────────── */
+.scrubber input[type="range"]::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  background: #00bfff;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.scrubber input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* ── Firefox Track ─────────────────────────────────────────────────────────── */
+.scrubber input[type="range"]::-moz-range-track {
+  height: 16px;
+  background: #444;
+  border-radius: 8px;
+}
+
+/* ── IE/Edge ───────────────────────────────────────────────────────────────── */
+.scrubber input[type="range"]::-ms-thumb {
+  width: 28px;
+  height: 28px;
+  background: #00bfff;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.scrubber input[type="range"]::-ms-track {
+  height: 16px;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
 }

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <header style="font-size:2.5rem; padding:1rem; font-weight:bold;">
+    Blue Marble 🔭🛰️
+  </header>
+
+  <main>
+    <div class="action-container">
+      <a href="{{ url_for('region_page', region=region_slug) }}" class="btn back-btn">← Back</a>
+      <div class="toggle-buttons">
+        <button id="map-btn" class="btn toggle-btn">Map</button>
+        <button id="enh-btn" class="btn toggle-btn">Enhanced</button>
+      </div>
+    </div>
+
+    <h2 class="explore-title">
+      {{ region_name }} / {{ channel_name }}
+    </h2>
+
+    <div class="explore-image-container">
+      <img
+        id="scrub-img"
+        src="{{ history[0].clean }}"
+        alt="{{ history[0].time }}"
+        loading="lazy"
+        data-clean-src="{{ history[0].clean }}"
+        data-map-src="{{ history[0].map or '' }}"
+        data-enh-clean-src="{{ history[0].enhanced_clean or '' }}"
+        data-enh-map-src="{{ history[0].enhanced_map or '' }}"
+      >
+    </div>
+
+    <div class="scrubber">
+      <input id="time-range" type="range" min="0" max="{{ history|length - 1 }}" value="0">
+      <div id="time-label">{{ history[0].time }}</div>
+    </div>
+  </main>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    // Inject the whole history into JS
+    const history = {{ history|tojson }};
+
+    const img     = document.getElementById('scrub-img');
+    const range   = document.getElementById('time-range');
+    const label   = document.getElementById('time-label');
+    const mapBtn  = document.getElementById('map-btn');
+    const enhBtn  = document.getElementById('enh-btn');
+
+    let mapOn = false, enhOn = false;
+
+    function updateImage() {
+      const frame = history[ +range.value ];
+      label.textContent = frame.time;
+
+      // pick variant in priority order:
+      //  both -> enhanced_map
+      //  map only -> map
+      //  enh only -> enhanced_clean
+      //  none -> clean
+      let url = frame.clean;
+      if      (mapOn && enhOn && frame.enhanced_map)   url = frame.enhanced_map;
+      else if (mapOn &&         frame.map)             url = frame.map;
+      else if (        enhOn && frame.enhanced_clean) url = frame.enhanced_clean;
+
+      img.src = url;
+    }
+
+    // wire up buttons
+    mapBtn .addEventListener('click', ()=>{ mapOn = !mapOn; mapBtn.classList.toggle('active', mapOn);  updateImage(); });
+    enhBtn .addEventListener('click', ()=>{ enhOn = !enhOn; enhBtn.classList.toggle('active', enhOn);  updateImage(); });
+    range  .addEventListener('input', updateImage);
+
+    // init
+    document.addEventListener('DOMContentLoaded', updateImage);
+  </script>
+{% endblock %}
