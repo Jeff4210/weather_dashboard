@@ -13,9 +13,10 @@ from flask import (
 )
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
-OUTPUT_BASE = "/home/jeff/weather/output/goes19"
-THUMB_BASE = "/home/jeff/weather_dashboard/thumbs"
-LARGE_THUMB_BASE = "/home/jeff/weather_dashboard/thumbs_large" 
+BASE_DIR         = os.path.abspath(os.path.dirname(__file__))
+OUTPUT_BASE      = os.path.join(BASE_DIR, "static", "output", "goes19")
+THUMB_BASE       = os.path.join(BASE_DIR, "static", "thumbs")
+LARGE_THUMB_BASE = os.path.join(BASE_DIR, "static", "thumbs_large")
 
 REGION_TITLES = {
     "fd": "Full-Disk (FD)",
@@ -184,6 +185,7 @@ def index():
         })
 
     return render_template("index.html", sections=sections)
+
 # ─── Serve master images ───────────────────────────────────────────────────────
 @app.route("/images/<region>/<channel>/<date>/<filename>")
 def serve_image(region, channel, date, filename):
@@ -193,25 +195,24 @@ def serve_image(region, channel, date, filename):
     return send_from_directory(folder, filename)
 
 
-# ─── Serve small thumbs ─────────────────────────────────────────────────────────
 @app.route("/thumbnails/<path:filename>")
 def serve_thumb(filename):
-    full = os.path.join(THUMB_BASE, filename)
-    if not os.path.isfile(full):
+    src = os.path.join(OUTPUT_BASE, filename)
+    if not os.path.isfile(src):
         abort(404)
-    folder, fname = os.path.split(full)
+    thumb_path = make_thumb(src, THUMB_BASE, size=(300,300), quality=85)
+    folder, fname = os.path.split(thumb_path)
     return send_from_directory(folder, fname, mimetype="image/jpeg")
 
-
-# ─── Serve large thumbs ─────────────────────────────────────────────────────────
 @app.route("/thumbnails_large/<path:filename>")
 def serve_large_thumb(filename):
-    full = os.path.join(LARGE_THUMB_BASE, filename)
-    if not os.path.isfile(full):
+    # build large thumbs *from* the small thumb, so we get consistency
+    src = os.path.join(THUMB_BASE, filename)
+    if not os.path.isfile(src):
         abort(404)
-    folder, fname = os.path.split(full)
+    thumb_path = make_thumb(src, LARGE_THUMB_BASE, size=(800,800), quality=95)
+    folder, fname = os.path.split(thumb_path)
     return send_from_directory(folder, fname, mimetype="image/jpeg")
-
 
 # ─── Region page (grid + toggles) ────────────────────────────────────────────
 @app.route("/<region>")

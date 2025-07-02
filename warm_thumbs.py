@@ -14,7 +14,7 @@ LARGE_QUALITY = 90
 def collect_sources():
     """Yield every image file under OUTPUT_BASE."""
     exts = ('.jpg', '.jpeg', '.png')
-    for root, _, files in os.walk(OUTPUT_BASE):
+    for root, _, files in os.walk(OUTPUT_BASE, followlinks=True):
         for fname in files:
             if fname.lower().endswith(exts):
                 yield os.path.join(root, fname)
