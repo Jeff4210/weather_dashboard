@@ -1,3 +1,7 @@
+# ignore all local thumbnails and mounted output
+static/output/
+static/thumbs/
+static/thumbs_large/
 # Python
 __pycache__/
 *.py[cod]
