@@ -13,9 +13,9 @@ from flask import (
 )
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
-OUTPUT_BASE = "/home/jeff/weather_dashboard/static/output/goes19"
-THUMB_BASE = "/home/jeff/weather_dashboard/static/thumbs"
-LARGE_THUMB_BASE = "/home/jeff/weather_dashboard/static/thumbs_large" 
+OUTPUT_BASE = "/home/jeff/weather_dashboard/static/output/goes19/"
+THUMB_BASE       = "/home/jeff/weather_dashboard/static/thumbs"
+LARGE_THUMB_BASE = "/home/jeff/weather_dashboard/static/thumbs_large"
 
 REGION_TITLES = {
     "fd": "Full-Disk (FD)",
@@ -31,7 +31,7 @@ CHANNEL_NAMES = {
     "ch11": "Cloud-Top Phase (8.4 μm)","ch12": "Ozone (9.6 μm)",
     "ch13": "Clean IR (10.3 μm)",   "ch14": "Split-Window IR (11.2 μm)",
     "ch15": "Ash (12.3 μm)",        "ch16": "Upper-Level WV (13.3 μm)",
-    "fc":   "False Color Composite"
+    "FC":   "False Color Composite", "CUSTOMLUT":"Custom LUT"
 }
 
 # ─── In-memory manifest + lock ────────────────────────────────────────────────
@@ -44,7 +44,7 @@ def build_manifest():
     available thumbnail variants, grouped by timestamp, per region/channel.
     Atomically swaps it into _manifest and returns it.
     """
-    new = {}
+    new_manifest = {}
 
     for region in REGION_TITLES:
         region_dict = {}
@@ -56,33 +56,42 @@ def build_manifest():
 
             # one bucket per timestamp
             ts_buckets = defaultdict(lambda: {
-                "clean": None,
-                "map": None,
+                "clean":        None,
+                "map":          None,
                 "enhanced_clean": None,
                 "enhanced_map": None,
-                "time": None
+                "time":         None
             })
 
-            # scan every date folder
+            # scan each date subfolder
             for date in sorted(os.listdir(base_dir)):
                 date_dir = os.path.join(base_dir, date)
-                if not os.path.isdir(date_dir) or not re.match(r"\d{4}-\d{2}-\d{2}", date):
+                if not os.path.isdir(date_dir) or not re.match(r"\d{4}-\d{2}-\d{2}$", date):
                     continue
 
                 for fn in os.listdir(date_dir):
                     fn_lc = fn.lower()
 
-                    # pick regex by channel
-                    if channel == "fc":
-                        # files named like …_20250628T120020Z_fc_clean.jpg
+                    # pick the right regex based on channel
+                    if channel == "CUSTOMLUT":
+                        # filenames like:
+                        #   GOES19_FD_20250705T060021Z_FC_CUSTOMLUT_clean.jpg
+                        pattern = (
+                            rf".*_(\d{{8}}t\d{{6}}z)_fc_customlut_"
+                            r"(clean|map|enhanced_clean|enhanced_map)\.jpg$"
+                        )
+                    elif channel == "FC":
+                        # filenames like:
+                        #   GOES19_FD_20250705T060021Z_fc_clean.jpg
                         pattern = (
                             rf".*_(\d{{8}}t\d{{6}}z)_fc_"
                             r"(clean|map|enhanced_clean|enhanced_map)\.jpg$"
                         )
                     else:
-                        # files named like …_ch02_20250628T120020Z_clean.jpg
+                        # for normal channels we only need to match the timestamp+variant,
+                        # since the directory already tells us the channel.
                         pattern = (
-                            rf".*_{channel}_(\d{{8}}t\d{{6}}z)_"
+                            rf".*_(\d{{8}}t\d{{6}}z)_"
                             r"(clean|map|enhanced_clean|enhanced_map)\.jpg$"
                         )
 
@@ -92,35 +101,34 @@ def build_manifest():
 
                     ts, variant = m.groups()
 
-                    # build the thumbnail URL
+                    # build the thumbnail URL path
                     url_path = f"/thumbnails_large/{region}/{channel}/{date}/{fn}"
+
                     bucket = ts_buckets[ts]
                     bucket[variant] = url_path
 
-                    # parse & set human time once per timestamp
+                    # parse timestamp once
                     if bucket["time"] is None:
-                        # uppercase the Z and parse with strptime
-                        ts_uc = ts.upper()  # e.g. "20250628T120020Z"
-                        dt = datetime.datetime.strptime(ts_uc, "%Y%m%dT%H%M%SZ")
-                        # treat as UTC, convert to local
+                        # e.g. "20250705T060021Z"
+                        dt = datetime.datetime.strptime(ts.upper(), "%Y%m%dT%H%M%SZ")
                         dt = dt.replace(tzinfo=datetime.timezone.utc) \
                                .astimezone(ZoneInfo("America/New_York"))
                         bucket["time"] = dt.strftime("%Y-%m-%d %I:%M %p")
 
-            # convert each bucket into a sorted list
-            entries = [ts_buckets[t] for t in sorted(ts_buckets)]
+            # convert each bucket into a sorted list of entries
+            entries = [ts_buckets[ts] for ts in sorted(ts_buckets)]
             if entries:
                 region_dict[channel] = entries
 
         if region_dict:
-            new[region] = region_dict
+            new_manifest[region] = region_dict
 
-    # swap into the global manifest under lock
+    # atomically swap into the global manifest
     with _manifest_lock:
         _manifest.clear()
-        _manifest.update(new)
+        _manifest.update(new_manifest)
 
-    return new
+    return new_manifest
 # ─── Get Manifest ─────────────────────────────────────────────────────────────
 def get_manifest():
     """Thread-safe snapshot of the in-memory manifest."""
@@ -137,7 +145,13 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 @app.route("/ping")
 def ping():
     return "pong", 200
-
+# ─── Context Processor ──────────────────────────────────────────────────────
+@app.context_processor
+def inject_globals():
+    return {
+      'CHANNEL_NAMES': CHANNEL_NAMES,
+      'REGION_TITLES':  REGION_TITLES
+    }
 # ─── Thumbnail generator ──────────────────────────────────────────────────────
 def make_thumb(src_path, dst_base, size, quality):
     """
@@ -164,21 +178,18 @@ def index():
     sections = []
 
     for region_slug, region_title in REGION_TITLES.items():
-        # channels is a dict: channel_slug → [ frame1, frame2, ... ]
-        channels = manifest.get(region_slug, {})
-        fc_history = channels.get("fc")
-
-        # skip if no FC history
-        if not fc_history:
+        CUSTOMLUT_history = manifest.get(region_slug, {}).get("CUSTOMLUT", [])
+        if not CUSTOMLUT_history:
             continue
 
-        # pick the newest frame (last in list)
-        latest = fc_history[-1]
-        # in the new manifest, latest["clean"] is a URL string
-        thumb_url = latest["clean"]
+        latest = CUSTOMLUT_history[-1]
+        # use the large thumbs route
+        relpath   = latest["clean"].split("/thumbnails_large/", 1)[1]
+        thumb_url = url_for("serve_large_thumb", filename=relpath)
+        link_url  = url_for("region_page", region=region_slug)
 
         sections.append({
-            "link":  url_for("region_page", region=region_slug),
+            "link":  link_url,
             "label": region_title,
             "thumb": thumb_url
         })
@@ -196,22 +207,28 @@ def serve_image(region, channel, date, filename):
 # ─── Serve small thumbs ─────────────────────────────────────────────────────────
 @app.route("/thumbnails/<path:filename>")
 def serve_thumb(filename):
-    full = os.path.join(THUMB_BASE, filename)
-    if not os.path.isfile(full):
+    # find the original in OUTPUT_BASE
+    src = os.path.join(OUTPUT_BASE, filename)
+    if not os.path.isfile(src):
         abort(404)
-    folder, fname = os.path.split(full)
-    return send_from_directory(folder, fname, mimetype="image/jpeg")
 
+    # generate (or re-generate) the small thumb under THUMB_BASE
+    thumb_path = make_thumb(src, THUMB_BASE, size=(300,300), quality=85)
+
+    folder, fname = os.path.split(thumb_path)
+    return send_from_directory(folder, fname, mimetype="image/jpeg")
 
 # ─── Serve large thumbs ─────────────────────────────────────────────────────────
 @app.route("/thumbnails_large/<path:filename>")
 def serve_large_thumb(filename):
-    full = os.path.join(LARGE_THUMB_BASE, filename)
-    if not os.path.isfile(full):
+    src_small = os.path.join(THUMB_BASE, filename)
+    if not os.path.isfile(src_small):
+        # no small thumb to base it on
         abort(404)
-    folder, fname = os.path.split(full)
+    # generate the large one under thumbs_large
+    thumb_large = make_thumb(src_small, LARGE_THUMB_BASE, size=(800,800), quality=95)
+    folder, fname = os.path.split(thumb_large)
     return send_from_directory(folder, fname, mimetype="image/jpeg")
-
 
 # ─── Region page (grid + toggles) ────────────────────────────────────────────
 @app.route("/<region>")
@@ -226,21 +243,18 @@ def region_page(region):
     for ch, display in CHANNEL_NAMES.items():
         history = region_data.get(ch)
         if not history:
-            # no data for this channel
             continue
 
-        # pick the newest timestamp; 
-        # our build_manifest() sorted ascending, so take the last element
+        # pick the newest timestamp; manifest is sorted ascending
         frame = history[-1]
 
         files_info.append({
             "slug":      ch,
             "display":   display,
-            # wrap each URL in the same structure your template expects:
-            "clean":     {"url": frame["clean"],             "thumb": frame["clean"],             "time": frame["time"]},
-            "map":       ({"url": frame["map"],               "thumb": frame["map"],               "time": frame["time"]}               if frame.get("map")              else None),
-            "enh_clean": ({"url": frame["enhanced_clean"],    "thumb": frame["enhanced_clean"],    "time": frame["time"]} if frame.get("enhanced_clean") else None),
-            "enh_map":   ({"url": frame["enhanced_map"],      "thumb": frame["enhanced_map"],      "time": frame["time"]} if frame.get("enhanced_map")   else None),
+            "clean":     {"url": frame["clean"],          "thumb": frame["clean"],          "time": frame["time"]},
+            "map":       ({"url": frame["map"],            "thumb": frame["map"],            "time": frame["time"]} if frame.get("map") else None),
+            "enh_clean": ({"url": frame.get("enhanced_clean"), "thumb": frame.get("enhanced_clean"), "time": frame["time"]} if frame.get("enhanced_clean") else None),
+            "enh_map":   ({"url": frame.get("enhanced_map"),   "thumb": frame.get("enhanced_map"),   "time": frame["time"]} if frame.get("enhanced_map")   else None),
         })
 
     return render_template(

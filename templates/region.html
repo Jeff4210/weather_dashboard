@@ -7,40 +7,40 @@
 
 {% block content %}
   <div class="action-container">
-    <a href="{{ url_for('index') }}" class="home-btn">Home</a>
+    <a href="{{ url_for('index') }}" class="home-btn">← Home</a>
     <div class="action-buttons">
       <button id="map-all" class="toggle-btn">Map</button>
       <button id="enh-all" class="toggle-btn">Enhanced</button>
     </div>
   </div>
 
-  <div class="region-grid">
-    {% for f in files_info %}
-      <article class="item">
-        <h2>{{ f.display }}</h2>
-        <div class="img-frame">
-          <img
-            src="{{ f.clean.thumb }}"
-            alt="{{ f.display }}"
-            loading="lazy"
-            data-clean-src="{{ f.clean.thumb }}"
-            data-map-src="{{ f.map.thumb  |default(f.clean.thumb) }}"
-            data-enh-clean-src="{{ f.enh_clean.thumb |default(f.clean.thumb) }}"
-            data-enh-map-src="{{ f.enh_map.thumb |default(f.map.thumb)|default(f.clean.thumb) }}"
-          >
-        </div>
-        <div class="time">{{ f.clean.time }}</div>
-
-        {# THIS LINK MUST INCLUDE BOTH region_slug AND f.slug #}
-        <a
-          href="{{ url_for('explore', region=region_slug, channel=f.slug) }}"
-          class="explore-btn"
-        >
-          🔍 Explore Timeline
-        </a>
-      </article>
-    {% endfor %}
-  </div>
+  {% if not files_info %}
+    <p>No imagery available for {{ region_name }}.</p>
+  {% else %}
+    <div class="region-grid">
+      {% for f in files_info %}
+        <article class="item">
+          <h2>{{ f.display }}</h2>
+          <div class="img-frame">
+            <img
+              src="{{ f.clean.thumb }}"
+              alt="{{ f.display }} at {{ f.clean.time }}"
+              loading="lazy"
+              data-clean-src="{{ f.clean.thumb }}"
+              data-map-src="{{ f.map.thumb if f.map else f.clean.thumb }}"
+              data-enh-clean-src="{{ f.enh_clean.thumb if f.enh_clean else f.clean.thumb }}"
+              data-enh-map-src="{{ f.enh_map.thumb if f.enh_map else (f.map.thumb if f.map else f.clean.thumb) }}"
+            >
+          </div>
+          <div class="time">{{ f.clean.time }}</div>
+          <a
+            href="{{ url_for('explore', region=region_slug, channel=f.slug) }}"
+            class="explore-btn"
+          >🌎 Explore Timeline</a>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
 {% endblock %}
 
 {% block scripts %}
