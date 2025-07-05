@@ -41,29 +41,35 @@ _manifest_lock = threading.Lock()
 def build_manifest():
     """
     Walk the output directory tree and build a manifest of all
-    available thumbnail variants, grouped by timestamp, per region/channel.
-    Atomically swaps it into _manifest and returns it.
+    available variants, grouped by timestamp, per region/channel.
     """
     new_manifest = {}
 
     for region in REGION_TITLES:
+        region_root = os.path.join(OUTPUT_BASE, region)
+        if not os.path.isdir(region_root):
+            continue
+
         region_dict = {}
+        # Discover which channel folders actually exist under this region
+        on_disk = [
+            d for d in os.listdir(region_root)
+            if os.path.isdir(os.path.join(region_root, d))
+        ]
+        # Filter to the ones we know/display
+        channels = [ch for ch in on_disk if ch in CHANNEL_NAMES]
 
-        for channel in CHANNEL_NAMES:
-            base_dir = os.path.join(OUTPUT_BASE, region, channel)
-            if not os.path.isdir(base_dir):
-                continue
-
-            # one bucket per timestamp
+        for channel in channels:
+            base_dir = os.path.join(region_root, channel)
             ts_buckets = defaultdict(lambda: {
-                "clean":        None,
-                "map":          None,
+                "clean":          None,
+                "map":            None,
                 "enhanced_clean": None,
-                "enhanced_map": None,
-                "time":         None
+                "enhanced_map":   None,
+                "time":           None
             })
 
-            # scan each date subfolder
+            # Scan each date (YYYY-MM-DD) subfolder
             for date in sorted(os.listdir(base_dir)):
                 date_dir = os.path.join(base_dir, date)
                 if not os.path.isdir(date_dir) or not re.match(r"\d{4}-\d{2}-\d{2}$", date):
@@ -71,59 +77,62 @@ def build_manifest():
 
                 for fn in os.listdir(date_dir):
                     fn_lc = fn.lower()
+                    ts = variant = None
 
-                    # pick the right regex based on channel
+                    # Composite channels have their own markers
                     if channel == "CUSTOMLUT":
-                        # filenames like:
-                        #   GOES19_FD_20250705T060021Z_FC_CUSTOMLUT_clean.jpg
-                        pattern = (
-                            rf".*_(\d{{8}}t\d{{6}}z)_fc_customlut_"
-                            r"(clean|map|enhanced_clean|enhanced_map)\.jpg$"
+                        m = re.match(
+                            rf".*_(\d{{8}}t\d{{6}}z)_fc_customlut_(clean|map|enhanced_clean|enhanced_map)\.jpg$",
+                            fn_lc
                         )
-                    elif channel == "FC":
-                        # filenames like:
-                        #   GOES19_FD_20250705T060021Z_fc_clean.jpg
-                        pattern = (
-                            rf".*_(\d{{8}}t\d{{6}}z)_fc_"
-                            r"(clean|map|enhanced_clean|enhanced_map)\.jpg$"
-                        )
-                    else:
-                        # for normal channels we only need to match the timestamp+variant,
-                        # since the directory already tells us the channel.
-                        pattern = (
-                            rf".*_(\d{{8}}t\d{{6}}z)_"
-                            r"(clean|map|enhanced_clean|enhanced_map)\.jpg$"
-                        )
+                        if m:
+                            ts, variant = m.groups()
 
-                    m = re.match(pattern, fn_lc)
-                    if not m:
+                    elif channel == "FC":
+                        m = re.match(
+                            rf".*_(\d{{8}}t\d{{6}}z)_fc_(clean|map|enhanced_clean|enhanced_map)\.jpg$",
+                            fn_lc
+                        )
+                        if m:
+                            ts, variant = m.groups()
+
+                    else:
+                        # 1) enhanced variants (prefix): _enhanced_<TS>_<clean|map>.jpg
+                        m = re.match(rf".*enhanced_(\d{{8}}t\d{{6}}z)_(clean|map)\.jpg$", fn_lc)
+                        if m:
+                            ts, v = m.groups()
+                            variant = f"enhanced_{v}"
+                        else:
+                            # 2) regular variants: _<TS>_<clean|map>.jpg
+                            m2 = re.match(rf".*_(\d{{8}}t\d{{6}}z)_(clean|map)\.jpg$", fn_lc)
+                            if m2:
+                                ts, variant = m2.groups()
+
+                    # If we didn’t match any of the above, skip
+                    if not ts or not variant:
                         continue
 
-                    ts, variant = m.groups()
-
-                    # build the thumbnail URL path
-                    url_path = f"/thumbnails_large/{region}/{channel}/{date}/{fn}"
-
+                    # Build the thumbnail URL
+                    url = f"/thumbnails_large/{region}/{channel}/{date}/{fn}"
                     bucket = ts_buckets[ts]
-                    bucket[variant] = url_path
+                    bucket[variant] = url
 
-                    # parse timestamp once
+                    # Parse human‐readable time once per timestamp
                     if bucket["time"] is None:
-                        # e.g. "20250705T060021Z"
                         dt = datetime.datetime.strptime(ts.upper(), "%Y%m%dT%H%M%SZ")
                         dt = dt.replace(tzinfo=datetime.timezone.utc) \
                                .astimezone(ZoneInfo("America/New_York"))
                         bucket["time"] = dt.strftime("%Y-%m-%d %I:%M %p")
 
-            # convert each bucket into a sorted list of entries
-            entries = [ts_buckets[ts] for ts in sorted(ts_buckets)]
+            # Convert buckets to a sorted list and add if non-empty
+            entries = [ts_buckets[t] for t in sorted(ts_buckets)]
             if entries:
                 region_dict[channel] = entries
 
         if region_dict:
             new_manifest[region] = region_dict
 
-    # atomically swap into the global manifest
+    # Atomically swap into the global manifest
     with _manifest_lock:
         _manifest.clear()
         _manifest.update(new_manifest)
