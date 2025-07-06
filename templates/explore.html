@@ -2,7 +2,7 @@
 {% block title %}Explore {{ channel_name }} – {{ region_name }}{% endblock %}
 
 {% block content %}
-<main>
+<main class="explore-main">
   <div class="action-container">
     <a href="{{ url_for('region_page', region=region_slug) }}" class="btn back-btn">← Back</a>
     <div class="toggle-buttons">
@@ -14,7 +14,6 @@
   <h2 class="explore-title">{{ channel_name }} in {{ region_name }}</h2>
 
   <div class="explore-image-container">
-    <!-- href="#" initially; JS will replace it with the master URL -->
     <a id="scrub-link" href="#" target="_blank" rel="noopener">
       <img
         id="scrub-img"
@@ -25,66 +24,106 @@
     </a>
   </div>
 
-  <div class="scrubber">
+  {# ——— everything below is now inside the glass pill ——— #}
+  <div class="timeline-controls">
+    <!-- Play/Pause -->
+    <button id="play-pause" class="icon-btn">
+      <svg viewBox="0 0 24 24"><path id="icon-path" d="M8 5v14l11-7z"/></svg>
+    </button>
+
+    <!-- Speed selector -->
+    <select id="playback-speed">
+      <option value="1">1×</option>
+      <option value="2">2×</option>
+      <option value="4">4×</option>
+      <option value="8">8×</option>
+      <option value="16">16×</option>
+      <option value="24">24×</option>
+    </select>
+
+    <!-- Thermal range + emoji thumb -->
     <input
       id="time-range"
       type="range"
       min="0"
       max="{{ history|length - 1 }}"
       value="0"
-    >
-    <div id="time-label">{{ history[0].time }}</div>
+    />
+
+    <!-- Timestamp -->
+    <time id="time-label">{{ history[0].time }}</time>
   </div>
 </main>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // 1) Pull in your history array
-  const history = {{ history|tojson }};
+  const history   = {{ history|tojson }};
+  const img       = document.getElementById('scrub-img');
+  const link      = document.getElementById('scrub-link');
+  const range     = document.getElementById('time-range');
+  const label     = document.getElementById('time-label');
+  const playBtn   = document.getElementById('play-pause');
+  const speed     = document.getElementById('playback-speed');
+  const mapBtn    = document.getElementById('map-btn');
+  const enhBtn    = document.getElementById('enh-btn');
+  const iconPath  = document.getElementById('icon-path');
 
-  // 2) Cache DOM nodes
-  const img    = document.getElementById('scrub-img');
-  const link   = document.getElementById('scrub-link');
-  const range  = document.getElementById('time-range');
-  const label  = document.getElementById('time-label');
-  const mapBtn = document.getElementById('map-btn');
-  const enhBtn = document.getElementById('enh-btn');
+  let intervalId = null;
+  let isPlaying  = false;
+  let mapOn      = false;
+  let enhOn      = false;
 
-  // 3) Toggle state
-  let mapOn = false, enhOn = false;
-
-  // 4) Helper to turn a large-thumb URL into its master image URL
-  function thumbToMaster(thumbUrl) {
-    return thumbUrl.replace('/thumbnails_large/', '/images/');
+  function thumbToMaster(url) {
+    return url.replace('/thumbnails_large/', '/images/');
   }
 
-  // 5) Main update function
   function updateImage() {
-    const frame = history[+range.value];
+    const i = +range.value;
+    const frame = history[i];
     label.textContent = frame.time;
 
-    // default to clean thumb
-    let thumbUrl  = frame.clean;
+    let thumb = frame.clean;
+    if (mapOn && enhOn && frame.enhanced_map)    thumb = frame.enhanced_map;
+    else if (mapOn && frame.map)                 thumb = frame.map;
+    else if (enhOn && frame.enhanced_clean)      thumb = frame.enhanced_clean;
 
-    // apply toggles
-    if (mapOn && enhOn && frame.enhanced_map) {
-      thumbUrl = frame.enhanced_map;
-    }
-    else if (mapOn && frame.map) {
-      thumbUrl = frame.map;
-    }
-    else if (enhOn && frame.enhanced_clean) {
-      thumbUrl = frame.enhanced_clean;
-    }
+    img.src  = thumb;
+    link.href = thumbToMaster(thumb);
 
-    // set the thumbnail
-    img.src = thumbUrl;
-    // set the link href to the corresponding master image
-    link.href = thumbToMaster(thumbUrl);
+    // update thermal fill percentage
+    const pct = (i / (history.length - 1)) * 100;
+    range.style.setProperty('--pct', pct + '%');
   }
 
-  // 6) Wire up controls
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    iconPath.setAttribute('d',
+      isPlaying
+        ? 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'  // pause icon
+        : 'M8 5v14l11-7z'                    // play icon
+    );
+    if (isPlaying) {
+      intervalId = setInterval(() => {
+        range.value = (+range.value + 1) % history.length;
+        updateImage();
+      }, 1000 / speed.value);
+    } else {
+      clearInterval(intervalId);
+    }
+  }
+
+  playBtn .addEventListener('click', togglePlay);
+  speed  .addEventListener('change', () => {
+    if (isPlaying) {
+      clearInterval(intervalId);
+      intervalId = setInterval(() => {
+        range.value = (+range.value + 1) % history.length;
+        updateImage();
+      }, 1000 / speed.value);
+    }
+  });
+
   mapBtn.addEventListener('click', () => {
     mapOn = !mapOn;
     mapBtn.classList.toggle('active', mapOn);
@@ -96,8 +135,16 @@
     updateImage();
   });
   range.addEventListener('input', updateImage);
-
-  // 7) Initialize on page load
-  document.addEventListener('DOMContentLoaded', updateImage);
-</script>
+  range.addEventListener('input', e => {
+      // calculate fill percent (0–100)
+      const pct = (+e.target.value / (history.length - 1)) * 100;
+      // shove it into the --pct variable on the slider
+      e.target.style.setProperty('--pct', pct + '%');
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+      // push initial percentage so the CSS fill shows up on load
+      const initPct = (range.value / (history.length - 1)) * 100;
+      range.style.setProperty('--pct', initPct + '%');
+      updateImage();
+    });</script>
 {% endblock %}

@@ -1,356 +1,679 @@
 /* ─── reset + base ───────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*, * ::before, * ::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
+
 body {
-  background: #000;
-  color: #fff;
-  font-family: sans-serif;
-  line-height: 1.4;
+    background: #000;
+    color: #fff;
+    font-family: sans-serif;
+    line-height: 1.4;
 }
+
 a {
-  color: inherit;
-  text-decoration: none;
+    color: inherit;
+    text-decoration: none;
 }
 
 /* ─── headers & layout ───────────────────────────────────────────── */
 header {
-  text-align: center;
-  padding: 2rem 0;       /* more vertical breathing room */
-  font-size: 2.5rem;       /* increase the text size */
-  font-weight: bold;     /* make it stand out */
-  color: #DADFE7;           /* optional: give it a splash of color */
-}
-main {
-  padding: 0 1rem 2rem;
-}
-/* Each section (thumbnail + label) */
-.index-grid .index-section {
-  text-align: center;
+    text-align: center;
+    padding: 2rem 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #DADFE7;
 }
 
+main {
+    padding: 0 1rem 2rem;
+}
+
+/* Each section (thumbnail + label) */
+.index-grid .index-section {
+    text-align: center;
+}
 
 /* Hover effect: scale up and slight shadow */
 .index-grid .index-section img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* Section labels under images */
 .index-grid .index-section .label {
-  display: block;
-  margin-top: 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #00bfff;
+    display: block;
+    margin-top: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #00bfff;
 }
-}
+
+/* …then continue your other rules… */
+
 /* Make each home-page “item” a fixed 220px flex block so they truly center */
 .index-grid .item {
-  flex: 0 0 220px;      /* don’t grow, don’t shrink, always 220px wide */
-  margin: 0;            /* clear any auto margins */
+    flex: 0 0 220px;
+    /* don’t grow, don’t shrink, always 220px wide */
+    margin: 0;
+    /* clear any auto margins */
 }
 /* home-page only: make each card 300px wide */
+
 .index-grid .index-section {
-  flex: 0 0 400px;    /* fixed 300px width */
+    flex: 0 0 400px;
+    /* fixed 300px width */
 }
 
 /* home-page only: bump image width to match */
 .index-grid .index-section img {
-  width: 400px;
+    width: 400px;
 }
 /* ensure the grid container really only wraps its content */
+
 .index-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2rem;
-  padding: 2rem 0;
-  width: auto;          /* don’t stretch to 100% of parent */
-  margin: 0 auto;       /* if you need extra centering in a wider context */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2rem 0;
+    width: auto;
+    /* don’t stretch to 100% of parent */
+    margin: 0 auto;
+    /* if you need extra centering in a wider context */
 }
 /* ─── the 4-column grid for your region pages ──────────── */
- .region-grid {
-   display: grid;
-   grid-template-columns: repeat(4, 1fr);
-   gap: 1rem;
-   margin-top: 1rem;
- }
+
+.region-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
 /* ─── grid items ─────────────────────────────────────────────────── */
-.index-grid .item,
-.region-grid .item {
-  background: #111;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 
-/* thumbnail container keeps the circles intact */
-.index-grid .item .img-frame,
-.region-grid .item .img-frame {
-  position: relative;
-  width: 100%;
-  padding-top: 100%; /* 1:1 aspect ratio */
-  overflow: hidden;
-}
-.index-grid .item img,
-.region-grid .item img {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* titles */
-.index-grid .item h2,
-.region-grid .item h2 {
-  padding: 0.5rem;
-  font-size: 1.1rem;
-  text-align: center;
-  background: #111;
-  width: 100%;
-}
-
-/* timestamp or “Explore Timeline” button row */
-.index-grid .item .time,
-.region-grid .item .time {
-  padding: 0.75rem 1rem;
-  width: 100%;
-  text-align: center;
-  font-size: 0.9rem;
-  background: #111;
-}
-
-/* pill-shaped “Explore Timeline” links */
-.index-grid .item a.explore-btn,
-.region-grid .item a.explore-btn {
-  display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 2px solid #00c0ff;
-  border-radius: 999px;
-  color: #00c0ff;
-  font-weight: bold;
-  background: transparent;
-}
-/* in static/main.css (or wherever you keep your global styles) */
-.explore-title {
-  text-align: left;       /* center it horizontally */
-  color: #D5D8DC;           /* pick any hex/RGB you like */
-  font-size: 1.5rem;          /* bump up the size if you want */
-  margin: 3rem 0;         /* vertical spacing above/below */
+.index-grid .item, .region-grid .item {
+    background: #111;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 /* ─── Map / Enhanced toggle buttons ─────────────────────────────── */
-.action-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-}
-.action-container .home-btn {
-  border: 2px solid #00c0ff;
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  color: #00c0ff;
-}
-.action-container .toggle-btn {
-  margin-left: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  background: #00c0ff;
-  border-radius: 999px;
-  color: #000;
-}
-/* Bigger, bolder text in your buttons */
-/*.action-container .toggle-btn,
-/*.action-container .home-btn {
-/*  font-size: 1.05rem;        /* increase from default */
-/*  font-weight: 600;         /* semi-bold */
-/*  line-height: 1.2;         /* tighten up vertical centering */
-/*  letter-spacing: 0.5px;    /* small tracking boost */
-/*  text-transform: uppercase;/* optional, for more punch */
-/*}
-/* ── Toggle buttons hover “pop” ───────────────────────────────────────────── */
-/*.action-container button,
-/*.action-container .btn {
-  /* make sure you have a transition on transform (and optionally shadow) */
-/*  transition: transform 0.15s ease, box-shadow 0.15s ease;
-/*}
 
-/* on hover, lift & scale them just a hair */
-/*.action-container button:hover,
-.action-container .btn:hover {
-  transform: scale(1.15);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.action-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
 }
-/* 1) Base (inactive) state — outlined like “Home” */
+
+.action-container .home-btn {
+    border: 2px solid #00c0ff;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    color: #00c0ff;
+}
+
 .action-container .toggle-btn {
-  border: 2px solid #00c0ff;
-  background: transparent;
-  color: #00c0ff;
-  font-size: 1.05rem; 
-  font-weight: 600;
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-              background-color 0.15s ease, color 0.15s ease;
+    margin-left: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: #00c0ff;
+    border-radius: 999px;
+    color: #000;
+}
+
+.action-container .toggle-btn {
+    border: 2px solid #00c0ff;
+    background: transparent;
+    color: #00c0ff;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 /* 2) Active state — filled like you have now */
 .action-container .toggle-btn.active {
-  border-color: transparent;
-  background-color: #00c0ff;
-  color: #000;
+    border-color: transparent;
+    background-color: #00c0ff;
+    color: #000;
 }
 
 /* 3) Hover “pop” for both states */
 .action-container .toggle-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}	
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 /* ─── explore (single-channel) page scrubber & image ───────────── */
+
 .explore-image-container {
-  max-width: 700px;
-  margin: 1rem auto;
+    max-width: 700px;
+    margin: 1rem auto;
 }
+
 .explore-image-container img {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 8px;
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
 }
+
 .scrubber-container {
-  max-width: 700px;
-  margin: 1rem auto;
-  text-align: center;
+    max-width: 700px;
+    margin: 1rem auto;
+    text-align: center;
 }
+
 .scrubber-container input[type="range"] {
-  width: 100%;
+    width: 100%;
 }
+
 .scrubber-container .scrub-time {
-  font-style: italic;
-  color: #ccc;
-  margin-top: 0.25rem;
+    font-style: italic;
+    color: #ccc;
+    margin-top: 0.25rem;
 }
 
 /* ─── responsive tweaks ─────────────────────────────────────────── */
 @media (max-width: 400px) {
-  .index-grid,
-  .region-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 400px) {
-  .index-grid,
-  .region-grid {
-    grid-template-columns: 1fr;
-  }
-}
-/* Smooth scale-up on hover for all thumbnails */
-.img-frame img {
-  transition: transform 0.3s ease;  /* animate any transform */
+    .index-grid, .region-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
-.item:hover .img-frame img,
-.index-item:hover .thumb-frame img {
-  transform: scale(1.05);          /* grow 5% on hover */
+@media (max-width: 400px) {
+    .index-grid, .region-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* Smooth scale-up on hover for all thumbnails */
+
+.img-frame img {
+    transition: transform 0.3s ease;
+    /* animate any transform */
+}
+
+.item:hover .img-frame img, .index-item:hover .thumb-frame img {
+    transform: scale(1.05);
+    /* grow 5% on hover */
 }
 /* ── Scrubber Container ───────────────────────────────────────────────────── */
+
 .scrubber {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 1.5rem 0;
-  gap: 0.75rem;    /* ← add this */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1.5rem 0;
+    gap: 0.75rem;
+    /* ← add this */
 }
 
 /* ── The Range Input Itself ───────────────────────────────────────────────── */
 .scrubber input[type="range"] {
-  -webkit-appearance: none;
-  width: 80%;            /* make it a bit wider */
-  height: 16px;          /* taller track */
-  background: #444;      /* dark track */
-  border-radius: 8px;
-  outline: none;
-  margin: 0;             /* trim extra default margins */
+    -webkit-appearance: none;
+    width: 80%;
+    /* make it a bit wider */
+    height: 16px;
+    /* taller track */
+    background: #444;
+    /* dark track */
+    border-radius: 8px;
+    outline: none;
+    margin: 0;
+    /* trim extra default margins */
 }
 
 /* ── WebKit/Blink Thumb ────────────────────────────────────────────────────── */
 .scrubber input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 28px;           /* larger thumb */
-  height: 28px;
-  background: #00bfff;   /* bright thumb */
-  border: 3px solid #fff;
-  border-radius: 50%;
-  cursor: pointer;
-  margin-top: -6px;      /* vertically center over the track */
-  transition: transform 0.15s ease;
+    -webkit-appearance: none;
+    width: 28px;
+    /* larger thumb */
+    height: 28px;
+    background: #00bfff;
+    /* bright thumb */
+    border: 3px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -6px;
+    /* vertically center over the track */
+    transition: transform 0.15s ease;
 }
+
 .scrubber input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
+    transform: scale(1.1);
 }
 
 /* ── Firefox Thumb ─────────────────────────────────────────────────────────── */
 .scrubber input[type="range"]::-moz-range-thumb {
-  width: 28px;
-  height: 28px;
-  background: #00bfff;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.15s ease;
+    width: 28px;
+    height: 28px;
+    background: #00bfff;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s ease;
 }
+
 .scrubber input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.1);
+    transform: scale(1.1);
 }
 
 /* ── Firefox Track ─────────────────────────────────────────────────────────── */
 .scrubber input[type="range"]::-moz-range-track {
-  height: 16px;
-  background: #444;
-  border-radius: 8px;
+    height: 16px;
+    background: #444;
+    border-radius: 8px;
 }
 
 /* ── IE/Edge ───────────────────────────────────────────────────────────────── */
 .scrubber input[type="range"]::-ms-thumb {
-  width: 28px;
-  height: 28px;
-  background: #00bfff;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  cursor: pointer;
+    width: 28px;
+    height: 28px;
+    background: #00bfff;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
 }
+
 .scrubber input[type="range"]::-ms-track {
-  height: 16px;
-  background: transparent;
-  border-color: transparent;
-  color: transparent;
+    height: 16px;
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
 }
 /* ─── mobile tweak: fewer columns & bigger tiles on small screens ───────── */
+
 @media (max-width: 600px) {
-  /* drop to 2 columns (or 1 if you prefer) */
-  .region-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
+    /* drop to 2 columns (or 1 if you prefer) */
+    .region-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }/* enlarge each card so the images aren’t tiny */
 
-  /* enlarge each card so the images aren’t tiny */
-  .region-grid .item {
-    /* add some vertical padding and let the grid rows auto-size */
-    padding: 0.5rem 0;
-  }
+    .region-grid .item {
+        /* add some vertical padding and let the grid rows auto-size */
+        padding: 0.5rem 0;
+    }/* bump up the img-frame so it’s a bit taller */
 
-  /* bump up the img-frame so it’s a bit taller */
-  .region-grid .item .img-frame {
-    padding-top: 120%; /* 1.2:1 aspect ratio instead of square */
-  }
+    .region-grid .item .img-frame {
+        padding-top: 120%;
+        /* 1.2:1 aspect ratio instead of square */
+    }
+}
+
+.explore-main {
+    padding-bottom: 4rem;
+    /* leave room for the controls */
+}
+/* ─── FINAL THERMAL TRACK + EMOJI THUMB + LIGHT PLAY BUTTON ─── */
+
+.timeline-controls {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .3rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(2px) saturate(120%) brightness(1.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    z-index: 10000;
+}
+
+/* thermal track */
+#time-range {
+    --pct: 0%;
+    flex: 1;
+    margin: 0 .5rem;
+    height: 8px;
+    background: #555;
+    background-image: linear-gradient( to right, #1E90FF, #32CD32, #FFD700, #FF4500
+    );
+    background-repeat: no-repeat;
+    background-size: var(--pct) 100%;
+    border-radius: 4px;
+    -webkit-appearance: none;
+    outline: none;
+}
+
+/* light, pill-shaped play button */
+.icon-btn {
+    background: none;
+    border: none;
+    padding: .3rem .5rem;
+    border-radius: .5rem;
+    transition: background .2s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.icon-btn svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    color: #fff;
+    display: block;
+}
+
+/* speed selector & timestamp */
+#playback-speed {
+    flex: 0 0 auto;
+    padding: .4rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: .75rem;
+    color: #fff;
+    font-size: 1rem;
+    appearance: none;
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+#playback-speed:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+#time-label {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* thumbnail container keeps the circles intact */
+.index-grid .item .img-frame, .region-grid .item .img-frame {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    /* 1:1 aspect ratio */
+    overflow: hidden;
+}
+
+.index-grid .item img, .region-grid .item img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* titles */
+.index-grid .item h2, .region-grid .item h2 {
+    padding: 0.5rem;
+    font-size: 1.1rem;
+    text-align: center;
+    background: #111;
+    width: 100%;
+}
+
+/* timestamp or “Explore Timeline” button row */
+.index-grid .item .time, .region-grid .item .time {
+    padding: 0.75rem 1rem;
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    background: #111;
+}
+
+/* pill-shaped “Explore Timeline” links */
+.index-grid .item a.explore-btn, .region-grid .item a.explore-btn {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid #00c0ff;
+    border-radius: 999px;
+    color: #00c0ff;
+    font-weight: bold;
+    background: transparent;
+}
+/* in static/main.css (or wherever you keep your global styles) */
+
+.explore-title {
+    text-align: left;
+    /* center it horizontally */
+    color: #D5D8DC;
+    /* pick any hex/RGB you like */
+    font-size: 1.5rem;
+    /* bump up the size if you want */
+    margin: 3rem 0;
+    /* vertical spacing above/below */
+}
+/* ─── Thermal track + emoji thumb ─────────────────────────────────── */
+
+/* turn your scrubber into a thermal pill: gray base + color fill via --pct */
+.scrubber input[type="range"] {
+  --pct: 0%;
+  background: #555;  /* un-filled track */
+  background-image:
+    linear-gradient(
+      to right,
+      #1E90FF, /* cold */
+      #32CD32, /* moderate */
+      #FFD700, /* warm */
+      #FF4500  /* hot */
+    );
+  background-repeat: no-repeat;
+  background-size: var(--pct) 100%;
+}
+
+/* override the track fill height & rounding */
+.scrubber input[type="range"]::-webkit-slider-runnable-track,
+.scrubber input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* transparent native thumb, with emoji background */
+.scrubber input[type="range"]::-webkit-slider-thumb,
+.scrubber input[type="range"]::-moz-range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 36px; height: 36px;
+  margin-top: -14px;  /* vertically center on 8px track */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  /* embed the 🛰️ (U+1F6F0 FE0F) via data-URI SVG + emoji font */
+  background-image:
+    url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' font-family='Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji'><text x='0' y='28' font-size='28'>%F0%9F%9F%B0%EF%B8%8F</text></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+/* keep the hover/thumb scale if you like */
+.scrubber input[type="range"]::-webkit-slider-thumb:hover,
+.scrubber input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+/* ─── Action Container (Back + toggles) ─────────────────────────── */
+.action-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+  gap: 1rem;
+}
+
+/* Back button (uses same .btn as elsewhere) */
+.back-btn {
+  border: 2px solid #00c0ff;
+  background: transparent;
+  color: #00c0ff;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.back-btn:hover {
+  background: rgba(0, 192, 255, 0.1);
+}
+
+/* Wrapper around the two toggles, so they sit together */
+.toggle-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Map / Enhanced toggle buttons */
+.toggle-btn {
+  border: 2px solid #00c0ff;
+  background: transparent;
+  color: #00c0ff;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.toggle-btn.active {
+  background: #00c0ff;
+  color: #000;
+  border-color: transparent;
+}
+.toggle-btn:hover {
+  background: rgba(0, 192, 255, 0.1);
+}
+
+/* ─── Thumbnail title ───────────────────────────────────────────── */
+.explore-title {
+  margin: 1rem 0;
+  font-size: 1.5rem;
+  color: #D5D8DC;
+}
+
+
+/* Timestamp label */
+#time-label {
+  min-width: 6ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #ccc;
+}
+/* ─── Glass pill container ───────────────────────── */
+.timeline-controls {
+  position: fixed;
+  left: 1rem; right: 1rem; bottom: 1rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.3rem 1rem;
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(2px) saturate(120%) brightness(1.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 1rem;
+  z-index: 10000;
+}
+
+/* ─── Thermal track (gray base + colorful fill) ───────────────── */
+#time-range {
+  --pct: 0%;
+  flex: 1; margin: 0 0.5rem;
+  height: 8px;
+  background: #555;
+  background-image:
+    linear-gradient(to right,
+      #1E90FF, /* cold */
+      #32CD32, /* temperate */
+      #FFD700, /* warm */
+      #FF4500  /* hot */
+    );
+  background-repeat: no-repeat;
+  background-size: var(--pct) 100%;
+  border-radius: 4px;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+
+/* ─── Play/Pause button ────────────────────────────────────────── */
+.icon-btn {
+  background: none;
+  border: none;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.icon-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+.icon-btn svg {
+  width: 1.8rem; height: 1.8rem;
+  fill: #fff;
+  display: block;
+}
+
+/* ─── Toggled “active” state for map/enhanced ───────────────────── */
+.toggle-btn.active {
+  background: #00c0ff;
+  color: #000;
+  border-color: transparent;
+}
+
+/* ─── Thermal‐gradient track (uses --pct from JS) ─── */
+#time-range {
+  --pct: 0%;
+  flex: 1;
+  margin: 0 .5rem;
+  height: 8px;
+  background: #555;
+  background-image:
+    linear-gradient(
+      to right,
+      #1E90FF, /* cold */
+      #32CD32, /* temperate */
+      #FFD700, /* warm */
+      #FF4500  /* hot */
+    );
+  background-repeat: no-repeat;
+  background-size: var(--pct) 100%;
+  border-radius: 4px;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+/* ─── Emoji thumb baked-in as SVG data URI ─── */
+#time-range::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 40px;
+  height: 40px;
+  margin-top: -16px; /* (32px thumb – 8px track)/2 */
+  border: none;
+  background: none;
+  background-image:
+    url("data:image/svg+xml;charset=UTF-8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>\
+<text x='0' y='30' font-size='28'>🛰️</text>\
+</svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  cursor: pointer;
+}
+
+#time-range::-moz-range-thumb {
+  width: 40px;
+  height: 40px;
+  margin-top: -16px;
+  border: none;
+  background: none;
+  background-image:
+    url("data:image/svg+xml;charset=UTF-8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>\
+<text x='0' y='30' font-size='28'>🛰️</text>\
+</svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  cursor: pointer;
 }
