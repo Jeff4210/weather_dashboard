@@ -19,24 +19,38 @@
   {% else %}
     <div class="region-grid">
       {% for f in files_info %}
+        {# choose the best initial variant #}
+        {% set iv = (f.enh_map if f.enh_map)
+                     or (f.map if f.map)
+                     or (f.enh_clean if f.enh_clean)
+                     or f.clean %}
+
         <article class="item">
           <h2>{{ f.display }}</h2>
           <div class="img-frame">
             <img
-              src="{{ f.clean.thumb }}"
-              alt="{{ f.display }} at {{ f.clean.time }}"
+              src="{{ iv.thumb }}"
+              alt="{{ f.display }} at {{ iv.time }}"
               loading="lazy"
+
               data-clean-src="{{ f.clean.thumb }}"
+              data-clean-time="{{ f.clean.time }}"
+
               data-map-src="{{ f.map.thumb if f.map else f.clean.thumb }}"
+              data-map-time="{{ f.map.time  if f.map else f.clean.time  }}"
+
               data-enh-clean-src="{{ f.enh_clean.thumb if f.enh_clean else f.clean.thumb }}"
+              data-enh-clean-time="{{ f.enh_clean.time  if f.enh_clean else f.clean.time  }}"
+
               data-enh-map-src="{{ f.enh_map.thumb if f.enh_map else (f.map.thumb if f.map else f.clean.thumb) }}"
+              data-enh-map-time="{{ f.enh_map.time  if f.enh_map else (f.map.time if f.map else f.clean.time) }}"
             >
           </div>
-          <div class="time">{{ f.clean.time }}</div>
+          <div class="time">{{ iv.time }}</div>
           <a
             href="{{ url_for('explore', region=region_slug, channel=f.slug) }}"
             class="explore-btn"
-          >🌎 Explore Timeline</a>
+          >🔎 Explore Timeline</a>
         </article>
       {% endfor %}
     </div>
@@ -48,17 +62,37 @@
 document.addEventListener('DOMContentLoaded', () => {
   const mapBtn = document.getElementById('map-all'),
         enhBtn = document.getElementById('enh-all'),
-        imgs   = document.querySelectorAll('.region-grid img');
+        items  = document.querySelectorAll('.region-grid article');
+
   let mapOn = false, enhOn = false;
 
   function updateAll() {
-    imgs.forEach(img => {
-      let src = img.dataset.cleanSrc;
-      if (mapOn && enhOn)      src = img.dataset.enhMapSrc;
-      else if (enhOn)           src = img.dataset.enhCleanSrc;
-      else if (mapOn)           src = img.dataset.mapSrc;
+    items.forEach(item => {
+      const img = item.querySelector('img'),
+            timeDiv = item.querySelector('.time');
+
+      let src, time;
+      if (mapOn && enhOn) {
+        src  = img.dataset.enhMapSrc;
+        time = img.dataset.enhMapTime;
+      }
+      else if (enhOn) {
+        src  = img.dataset.enhCleanSrc;
+        time = img.dataset.enhCleanTime;
+      }
+      else if (mapOn) {
+        src  = img.dataset.mapSrc;
+        time = img.dataset.mapTime;
+      }
+      else {
+        src  = img.dataset.cleanSrc;
+        time = img.dataset.cleanTime;
+      }
+
       img.src = src;
+      timeDiv.textContent = time;
     });
+
     mapBtn.classList.toggle('active', mapOn);
     enhBtn.classList.toggle('active', enhOn);
   }

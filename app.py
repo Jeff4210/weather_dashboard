@@ -13,9 +13,12 @@ from flask import (
 )
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
-OUTPUT_BASE = "/home/jeff/weather_dashboard/static/output/goes19/"
-THUMB_BASE       = "/home/jeff/weather_dashboard/static/thumbs"
-LARGE_THUMB_BASE = "/home/jeff/weather_dashboard/static/thumbs_large"
+OUTPUT_BASE = os.getenv(
+    "GOES_OUTPUT_BASE",
+    os.path.join(os.path.dirname(__file__), "static", "output", "goes19")
+)
+THUMB_BASE       = os.path.join(os.path.dirname(__file__), "static", "thumbs")
+LARGE_THUMB_BASE = os.path.join(os.path.dirname(__file__), "static", "thumbs_large")
 
 REGION_TITLES = {
     "fd": "Full-Disk (FD)",
@@ -40,8 +43,8 @@ _manifest_lock = threading.Lock()
 # ─── Manifest builder ─────────────────────────────────────────────────────────
 def build_manifest():
     """
-    Walk the output directory tree and build a manifest of all
-    available variants, grouped by timestamp, per region/channel.
+    Walk every JPEG under OUTPUT_BASE/<region>/<channel>/<date>/filename.jpg
+    and bucket them by region→channel→timestamp→variant.
     """
     new_manifest = {}
 
@@ -51,88 +54,93 @@ def build_manifest():
             continue
 
         region_dict = {}
-        # Discover which channel folders actually exist under this region
-        on_disk = [
-            d for d in os.listdir(region_root)
-            if os.path.isdir(os.path.join(region_root, d))
-        ]
-        # Filter to the ones we know/display
-        channels = [ch for ch in on_disk if ch in CHANNEL_NAMES]
+        # Glob for all JPGs three levels deep: region/channel/date/file.jpg
+        pattern = os.path.join(region_root, "*", "*", "*.jpg")
+        for path in glob.glob(pattern):
+            # Extract channel, date and filename from the path
+            # e.g. /.../output/goes19/fd/ch02/2025-07-05/FN.jpg
+            parts = path.split(os.sep)
+            channel = parts[-3]
+            date    = parts[-2]
+            fn      = parts[-1]
 
-        for channel in channels:
-            base_dir = os.path.join(region_root, channel)
-            ts_buckets = defaultdict(lambda: {
-                "clean":          None,
-                "map":            None,
-                "enhanced_clean": None,
-                "enhanced_map":   None,
-                "time":           None
-            })
+            if channel not in CHANNEL_NAMES:
+                continue
 
-            # Scan each date (YYYY-MM-DD) subfolder
-            for date in sorted(os.listdir(base_dir)):
-                date_dir = os.path.join(base_dir, date)
-                if not os.path.isdir(date_dir) or not re.match(r"\d{4}-\d{2}-\d{2}$", date):
-                    continue
+            fn_lc = fn.lower()
+            ts = variant = None
 
-                for fn in os.listdir(date_dir):
-                    fn_lc = fn.lower()
-                    ts = variant = None
+            # 1) CUSTOMLUT composite
+            if channel.upper() == "CUSTOMLUT":
+                m = re.match(
+                    r".*_(\d{8}t\d{6}z)_fc_customlut_(clean|map|enhanced_clean|enhanced_map)\.jpg$",
+                    fn_lc
+                )
+                if m:
+                    ts, variant = m.groups()
 
-                    # Composite channels have their own markers
-                    if channel == "CUSTOMLUT":
-                        m = re.match(
-                            rf".*_(\d{{8}}t\d{{6}}z)_fc_customlut_(clean|map|enhanced_clean|enhanced_map)\.jpg$",
-                            fn_lc
-                        )
-                        if m:
-                            ts, variant = m.groups()
+            # 2) FC composite
+            elif channel.upper() == "FC":
+                m = re.match(
+                    r".*_(\d{8}t\d{6}z)_fc_(clean|map|enhanced_clean|enhanced_map)\.jpg$",
+                    fn_lc
+                )
+                if m:
+                    ts, variant = m.groups()
 
-                    elif channel == "FC":
-                        m = re.match(
-                            rf".*_(\d{{8}}t\d{{6}}z)_fc_(clean|map|enhanced_clean|enhanced_map)\.jpg$",
-                            fn_lc
-                        )
-                        if m:
-                            ts, variant = m.groups()
+            # 3) Spectral bands (ch01–ch16)
+            else:
+                # a) enhanced variants: …_enhanced_<TS>_<type>.jpg
+                m = re.match(
+                    r".*_enhanced_(\d{8}t\d{6}z)_(clean|map)\.jpg$",
+                    fn_lc
+                )
+                if m:
+                    ts, v = m.groups()
+                    variant = f"enhanced_{v}"
+                else:
+                    # b) clean/map variants: …_<TS>_<type>.jpg
+                    m2 = re.match(
+                        r".*_(\d{8}t\d{6}z)_(clean|map)\.jpg$",
+                        fn_lc
+                    )
+                    if m2:
+                        ts, variant = m2.groups()
 
-                    else:
-                        # 1) enhanced variants (prefix): _enhanced_<TS>_<clean|map>.jpg
-                        m = re.match(rf".*enhanced_(\d{{8}}t\d{{6}}z)_(clean|map)\.jpg$", fn_lc)
-                        if m:
-                            ts, v = m.groups()
-                            variant = f"enhanced_{v}"
-                        else:
-                            # 2) regular variants: _<TS>_<clean|map>.jpg
-                            m2 = re.match(rf".*_(\d{{8}}t\d{{6}}z)_(clean|map)\.jpg$", fn_lc)
-                            if m2:
-                                ts, variant = m2.groups()
+            if not ts or not variant:
+                continue
 
-                    # If we didn’t match any of the above, skip
-                    if not ts or not variant:
-                        continue
+            # build per-channel, per-timestamp bucket
+            ch_buckets = region_dict.setdefault(
+                channel,
+                defaultdict(lambda: {
+                    "clean": None,
+                    "map": None,
+                    "enhanced_clean": None,
+                    "enhanced_map": None,
+                    "time": None
+                })
+            )
+            bucket = ch_buckets[ts]
+            bucket[variant] = f"/thumbnails_large/{region}/{channel}/{date}/{fn}"
 
-                    # Build the thumbnail URL
-                    url = f"/thumbnails_large/{region}/{channel}/{date}/{fn}"
-                    bucket = ts_buckets[ts]
-                    bucket[variant] = url
+            # record human‐readable time (once)
+            if bucket["time"] is None:
+                dt = datetime.datetime.strptime(ts.upper(), "%Y%m%dT%H%M%SZ")
+                dt = dt.replace(tzinfo=datetime.timezone.utc) \
+                       .astimezone(ZoneInfo("America/New_York"))
+                bucket["time"] = dt.strftime("%Y-%m-%d %I:%M %p")
 
-                    # Parse human‐readable time once per timestamp
-                    if bucket["time"] is None:
-                        dt = datetime.datetime.strptime(ts.upper(), "%Y%m%dT%H%M%SZ")
-                        dt = dt.replace(tzinfo=datetime.timezone.utc) \
-                               .astimezone(ZoneInfo("America/New_York"))
-                        bucket["time"] = dt.strftime("%Y-%m-%d %I:%M %p")
-
-            # Convert buckets to a sorted list and add if non-empty
-            entries = [ts_buckets[t] for t in sorted(ts_buckets)]
-            if entries:
-                region_dict[channel] = entries
+        # now convert each channel’s buckets into a sorted list
+        for ch, tb in region_dict.items():
+            # sort timestamps ascending, then keep them all
+            entries = [tb[t] for t in sorted(tb)]
+            region_dict[ch] = entries
 
         if region_dict:
             new_manifest[region] = region_dict
 
-    # Atomically swap into the global manifest
+    # atomically swap into the global manifest
     with _manifest_lock:
         _manifest.clear()
         _manifest.update(new_manifest)
@@ -150,6 +158,11 @@ build_manifest()
 # ─── Flask app setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+# DEBUG: once, at startup
+with app.app_context():
+    for region in REGION_TITLES:
+        region_root = os.path.join(OUTPUT_BASE, region)
+        app.logger.debug(f"DEBUG: {region_root} subfolders = {os.listdir(region_root)!r}")
 # ─── Health-check endpoint ────────────────────────────────────────────────────
 @app.route("/ping")
 def ping():
@@ -230,12 +243,13 @@ def serve_thumb(filename):
 # ─── Serve large thumbs ─────────────────────────────────────────────────────────
 @app.route("/thumbnails_large/<path:filename>")
 def serve_large_thumb(filename):
-    src_small = os.path.join(THUMB_BASE, filename)
-    if not os.path.isfile(src_small):
-        # no small thumb to base it on
+# build path to the original full-res image
+    # filename is e.g. "fd/ch02/2025-07-05/GOES19_FD_20250705T120021Z_clean.jpg"
+    src_orig = os.path.join(OUTPUT_BASE, filename)
+    if not os.path.isfile(src_orig):
         abort(404)
-    # generate the large one under thumbs_large
-    thumb_large = make_thumb(src_small, LARGE_THUMB_BASE, size=(800,800), quality=95)
+    # generate an 800×800-max thumbnail from the original
+    thumb_large = make_thumb(src_orig, LARGE_THUMB_BASE, size=(800,800), quality=95)
     folder, fname = os.path.split(thumb_large)
     return send_from_directory(folder, fname, mimetype="image/jpeg")
 
@@ -249,28 +263,30 @@ def region_page(region):
         abort(404)
 
     files_info = []
-    for ch, display in CHANNEL_NAMES.items():
+    # iterate in CHANNEL_NAMES order, but only include ones with data
+    for ch in CHANNEL_NAMES:
         history = region_data.get(ch)
         if not history:
             continue
 
-        # pick the newest timestamp; manifest is sorted ascending
+        # pick the newest timestamp; our build_manifest sorted ascending
         frame = history[-1]
 
+        # wrap into the structure your template expects:
         files_info.append({
-            "slug":      ch,
-            "display":   display,
-            "clean":     {"url": frame["clean"],          "thumb": frame["clean"],          "time": frame["time"]},
-            "map":       ({"url": frame["map"],            "thumb": frame["map"],            "time": frame["time"]} if frame.get("map") else None),
-            "enh_clean": ({"url": frame.get("enhanced_clean"), "thumb": frame.get("enhanced_clean"), "time": frame["time"]} if frame.get("enhanced_clean") else None),
-            "enh_map":   ({"url": frame.get("enhanced_map"),   "thumb": frame.get("enhanced_map"),   "time": frame["time"]} if frame.get("enhanced_map")   else None),
+            "slug":    ch,
+            "display": CHANNEL_NAMES[ch],
+            "clean":   {"thumb": frame["clean"],            "time": frame["time"]},
+            "map":     ({"thumb": frame["map"],              "time": frame["time"]}   if frame.get("map")         else None),
+            "enh_clean":({"thumb": frame.get("enhanced_clean"), "time": frame["time"]}   if frame.get("enhanced_clean") else None),
+            "enh_map":  ({"thumb": frame.get("enhanced_map"),   "time": frame["time"]}   if frame.get("enhanced_map")   else None),
         })
 
     return render_template(
         "region.html",
-        region_slug= r,
-        region_name= REGION_TITLES.get(r, r),
-        files_info=  files_info
+        region_slug=r,
+        region_name=REGION_TITLES.get(r, r),
+        files_info=files_info
     )
 # ─── Explore page (scrubber timeline) ────────────────────────────────────────
 @app.route("/<region>/explore/<channel>")

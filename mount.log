@@ -1,0 +1,9 @@
+mount_nfs: can't mount /home/jeff/weather/output/goes19 from 100.124.246.6 onto /Users/jeff/Pictures/Satellite/Weather_Dashboard/weather_dashboard/static/output/goes19: Permission denied
+mount 100.124.246.6:/home/jeff/weather/output/goes19 on /Users/jeff/Pictures/Satellite/Weather_Dashboard/weather_dashboard/static/output/goes19
+mount flags: 0x0
+socket: type:any
+file system locations:
+/home/jeff/weather/output/goes19
+  100.124.246.6
+    inet 100.124.246.6
+NFS options: fg,retrycnt=1,vers=3,hard,resvport
