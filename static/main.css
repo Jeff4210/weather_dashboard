@@ -8,6 +8,7 @@
 body {
     background: #000;
     color: #fff;
+    background-image: url('/static/images/stars.png');
     font-family: sans-serif;
     line-height: 1.4;
 }
@@ -87,7 +88,7 @@ main {
 
 .region-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-top: 1rem;
 }
@@ -676,4 +677,36 @@ main {
   background-position: center;
   background-size: contain;
   cursor: pointer;
+}
+/* in your main.css (or a page-specific stylesheet loaded after main.css) */
+
+/* 1) Apply starfield to the entire explore page background */
+.explore-main {
+  /* Fallback to black if the image fails to load */
+  background-color: #000;
+  /* Your star image: center it, don’t repeat, cover the area */
+  background-image: url('/static/images/stars.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  /* keep your existing padding-bottom so the controls have room */
+  padding-bottom: 4rem;
+}
+
+/* 2) Make sure the globe itself is sitting on transparent so you see the stars behind */
+.explore-image-container {
+  /* remove any default background */
+  background: transparent;
+  /* ensure it’s on top of the starfield */
+  position: relative;
+  z-index: 1;
+}
+
+/* 3) Keep your glass-pill controls above everything */
+.timeline-controls {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 1000;  /* above the globe */
 }
