@@ -26,7 +26,8 @@
 
   {# ——— everything below is now inside the glass pill ——— #}
   <div class="timeline-controls">
-    <!-- Play/Pause -->
+  <div class="mobile-controls">
+    <!-- Play/Pause button -->
     <button id="play-pause" class="icon-btn">
       <svg viewBox="0 0 24 24"><path id="icon-path" d="M8 5v14l11-7z"/></svg>
     </button>
@@ -41,17 +42,18 @@
       <option value="24">24×</option>
     </select>
 
-    <!-- Thermal range + emoji thumb -->
-    <input
-      id="time-range"
-      type="range"
-      min="0"
-      max="{{ history|length - 1 }}"
-      value="0"
-    />
-
     <!-- Timestamp -->
     <time id="time-label">{{ history[0].time }}</time>
+  </div>
+
+  <!-- Thermal slider always at bottom -->
+  <input
+    id="time-range"
+    type="range"
+    min="0"
+    max="{{ history|length - 1 }}"
+    value="0"
+  />
   </div>
 </main>
 {% endblock %}

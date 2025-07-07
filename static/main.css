@@ -312,6 +312,53 @@ main {
     padding-bottom: 4rem;
     /* leave room for the controls */
 }
+/* allow our controls bar to wrap on narrow viewports */
+.timeline-controls {
+  flex-wrap: wrap;
+}
+
+/* push the timestamp to the right and shrink it */
+#time-label {
+  margin-left: auto;
+  white-space: nowrap;      /* no breaking */
+  font-size: 0.85rem;       /* slightly smaller on mobile */
+  flex-shrink: 0;
+}
+
+/* make the slider line and thumb sit nicely when wrapped */
+@media (max-width: 480px) {
+  .timeline-controls {
+    gap: .5rem;
+  }
+  .scrubber {
+    order: 3;               /* move the scrubber/tray to the next line */
+    width: 100%;
+  }
+  .icon-btn, #playback-speed, #time-label {
+    order: 1;               /* keep buttons and speed selector on first line */
+  }
+}
+/* On narrow screens, stack controls+timestamp above the slider */
+@media (max-width: 600px) {
+  .glass-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mobile-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.5rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+  .timeline-slider {
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+}
+
 /* ─── FINAL THERMAL TRACK + EMOJI THUMB + LIGHT PLAY BUTTON ─── */
 
 .timeline-controls {
@@ -321,7 +368,7 @@ main {
     right: 1rem;
     display: flex;
     align-items: center;
-    gap: .75rem;
+    gap: 1rem;
     padding: .3rem 1rem;
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(2px) saturate(120%) brightness(1.05);
@@ -388,6 +435,13 @@ main {
     flex: 0 0 auto;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+    font-size: 1rem;       /* slightly larger timestamp */
+    margin-left: 0.75rem;   /* a bit of breathing room */
+}
+/* Add margin to play and speed controls so they don’t butt up against the edge */
+.icon-btn,
+#playback-speed {
+  margin-right: 0.5rem;
 }
 
 /* thumbnail container keeps the circles intact */
@@ -646,15 +700,15 @@ main {
 #time-range::-webkit-slider-thumb {
   -webkit-appearance: none !important;
   appearance: none !important;
-  width: 40px;
-  height: 40px;
-  margin-top: -16px; /* (32px thumb – 8px track)/2 */
+  width: 32px;
+  height: 32px;
+  margin-top: -12px; /* (32px thumb – 8px track)/2 */
   border: none;
   background: none;
   background-image:
     url("data:image/svg+xml;charset=UTF-8,\
 <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>\
-<text x='0' y='30' font-size='28'>🛰️</text>\
+<text x='0' y='30' font-size='36'>🛰️</text>\
 </svg>");
   background-repeat: no-repeat;
   background-position: center;
@@ -663,15 +717,15 @@ main {
 }
 
 #time-range::-moz-range-thumb {
-  width: 40px;
-  height: 40px;
-  margin-top: -16px;
+  width: 32px;
+  height: 32px;
+  margin-top: -12px;
   border: none;
   background: none;
   background-image:
     url("data:image/svg+xml;charset=UTF-8,\
 <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>\
-<text x='0' y='30' font-size='28'>🛰️</text>\
+<text x='0' y='30' font-size='36'>🛰️</text>\
 </svg>");
   background-repeat: no-repeat;
   background-position: center;
@@ -709,4 +763,44 @@ main {
   left: 1rem;
   right: 1rem;
   z-index: 1000;  /* above the globe */
+}
+@media (max-width: 480px) {
+  .timeline-controls {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    width: calc(100% - 2rem);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    bottom: 1.5rem;
+    padding: .5rem 1rem;
+     align-items: center;
+  }
+  /* allow the scrubber to fill the width */
+  .scrubber {
+    order: 1;
+    width: 100%;
+  }
+  /* let the play button & speed selector share the first row */
+  .icon-btn,
+  #playback-speed,
+  #time-label {
+    order: 0;
+    margin-bottom: 0.25rem;
+  }
+  /* bump image bottom margin so pill isn’t too far down */
+  .explore-image-container {
+    margin-bottom: 0.5rem;
+  }
+}
+/* add right after your .timeline-controls rules */
+#playback-speed {
+  align-self: center;
+}
+@media (max-width: 480px) {
+  #time-range {
+    width: 100% !important;
+    margin: 0.5rem 0 !important;
+  }
 }
