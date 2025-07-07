@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}STPI Sources{% endblock %}
+{% block content %}
+<main>
+  <h1>STPI Data Sources</h1>
+  <div class="index-grid">
+    {# only iterate sources that actually have at least one frame #}
+    {% for slug, info in sources.items() if info.frames %}
+      <div class="index-section item">
+        <a href="{{ url_for('stpi_page', source=slug) }}">
+          <div class="img-frame">
+            {# now safe to grab -1 because info.frames is non-empty #}
+            <img src="{{ info.frames[-1].thumb }}" alt="{{ info.title }}">
+          </div>
+          <span class="label">{{ info.title }}</span>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,19 @@
+{# templates/stpi_region.html #}
+{% extends "base.html" %}
+{% block title %}{{ source_title }} – STPI{% endblock %}
+{% block content %}
+<main class="explore-main">
+  <h2>{{ source_title }}</h2>
+  <div class="explore-image-container">
+    <img id="scrub-img" src="{{ frames[0].thumb }}" alt="{{ frames[0].time }}">
+  </div>
+  <div class="timeline-controls">
+    <!-- play/pause, speed, slider, time -->
+    … (your existing scrubber markup) …
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script>…(your existing STPI JS)…</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-import re          
+import re
 import json
 import glob
 import threading
@@ -19,6 +19,16 @@ OUTPUT_BASE = os.getenv(
 )
 THUMB_BASE       = os.path.join(os.path.dirname(__file__), "static", "thumbs")
 LARGE_THUMB_BASE = os.path.join(os.path.dirname(__file__), "static", "thumbs_large")
+# STPI output root ────────────────────────────────────────────────────────────
+STPI_BASE   = os.path.join(
+    os.path.dirname(__file__),
+    "static", "output", "stpi"
+)
+# human‐friendly titles
+STPI_SOURCES = {
+    "noaa":   "NOAA APT",
+    "meteor": "Meteor LRPT"
+}
 
 REGION_TITLES = {
     "fd": "Full-Disk (FD)",
@@ -40,6 +50,8 @@ CHANNEL_NAMES = {
 # ─── In-memory manifest + lock ────────────────────────────────────────────────
 _manifest      = {}
 _manifest_lock = threading.Lock()
+_stpi_manifest      = {}
+_stpi_manifest_lock = threading.Lock()
 # ─── Manifest builder ─────────────────────────────────────────────────────────
 def build_manifest():
     """
@@ -155,6 +167,76 @@ def get_manifest():
 
 # ─── 2) CALL it once, now that it’s defined ─────────────────────────
 build_manifest()
+# ─── SCAN the STPI folders ──────────────────────────────────────────────────
+def scan_stpi_manifest():
+    """
+    Walk static/output/stpi/ and collect only NOAA APT and Meteor LRPT frames
+    whose filenames include 'apt', 'avhrr', or 'msa'.
+    """
+    new = { slug: {"title": title, "frames": []}
+            for slug, title in STPI_SOURCES.items() }
+
+    for entry in sorted(os.listdir(STPI_BASE)):
+        entry_path = os.path.join(STPI_BASE, entry)
+        if not os.path.isdir(entry_path):
+            continue
+
+        # Determine source slug
+        el = entry.lower()
+        if "noaa" in el:
+            key = "noaa"
+        elif "meteor" in el:
+            key = "meteor"
+        else:
+            continue
+
+        # Parse human-readable time from the folder name
+        try:
+            dt = datetime.datetime.strptime(entry, "%Y-%m-%d_%H-%M")
+            dt = dt.replace(tzinfo=ZoneInfo("America/New_York"))
+            human = dt.strftime("%Y-%m-%d %I:%M %p")
+        except ValueError:
+            human = entry
+
+        # Collect only relevant image files
+        for fn in sorted(os.listdir(entry_path)):
+            fn_lc = fn.lower()
+            if not fn_lc.endswith((".jpg", ".jpeg", ".png")):
+                continue
+            # only include APT, AVHRR, or MSA images
+            if not ("apt" in fn_lc or "avhrr" in fn_lc or "msa" in fn_lc):
+                continue
+
+            rel = os.path.join("output", "stpi", entry, fn)
+            new[key]["frames"].append({
+                "rel":  rel,
+                "time": human
+            })
+
+    return new
+
+# ─── BUILD & CACHE the STPI manifest ───────────────────────────────────────
+def build_stpi_manifest():
+    """
+    Populate the in-memory STPI manifest by scanning folders,
+    then store it under lock.
+    """
+    m = scan_stpi_manifest()
+    with _stpi_manifest_lock:
+        _stpi_manifest.clear()
+        _stpi_manifest.update(m)
+    return m
+
+def get_stpi_manifest():
+    with _stpi_manifest_lock:
+        # shallow copy to avoid accidental mutation
+        return {k: {"title": v["title"], "frames": list(v["frames"])}
+                for k, v in _stpi_manifest.items()}
+
+
+# ─── INITIALIZE once at startup (no url_for) ─────────────────────────────
+build_stpi_manifest()
+
 # ─── Flask app setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
@@ -309,6 +391,50 @@ def explore(region, channel):
         channel_name= CHANNEL_NAMES.get(channel, channel),
         history=      history
     )
+# ─── ROUTES ────────────────────────────────────────────────────────────────
+@app.route("/stpi")
+def stpi_index():
+    # rebuild each request so you pick up new folders
+    manifest = build_stpi_manifest()
+
+    # now convert each stored “rel” into a true URL
+    for info in manifest.values():
+        for f in info["frames"]:
+            f["thumb"] = url_for("static", filename=f["rel"])
+            f["url"]   = url_for("static", filename=f["rel"])
+
+    return render_template("stpi_index.html", sources=manifest)
+
+
+@app.route("/stpi/<source>")
+def stpi_page(source):
+    manifest = get_stpi_manifest().get(source)
+    if not manifest:
+        abort(404)
+
+    # again, convert each “rel” to a URL inside the request/app context
+    for f in manifest["frames"]:
+        f["thumb"] = url_for("static", filename=f["rel"])
+        f["url"]   = url_for("static", filename=f["rel"])
+
+    return render_template(
+        "stpi_region.html",
+        source_slug= source,
+        source_title=manifest["title"],
+        frames=manifest["frames"]
+    )
+
+# ─── NOAA ────────────────────────────────────────────────────────────────
+@app.route("/noaa")
+def noaa_page():
+    # you can pass any data you like into this template
+    return render_template("noaa.html", title="NOAA Data")
+# ─── Meteor ────────────────────────────────────────────────────────────────
+@app.route("/meteor")
+def meteor_page():
+    # likewise, pass whatever context you need
+    return render_template("meteor.html", title="Meteor Tracker")
+
 # ─── Error handlers ───────────────────────────────────────────────────────────
 @app.errorhandler(404)
 def not_found(e):
@@ -326,6 +452,7 @@ def handle_all_exceptions(e):
 def healthz():
     return "OK", 200
 
+
 # ─── Debug manifest endpoint ─────────────────────────────────────────────────
 @app.route("/__manifest__")
 def show_manifest():
@@ -333,6 +460,15 @@ def show_manifest():
     build_manifest()
     with _manifest_lock:
         snap = dict(_manifest)
+    return jsonify(snap)
+
+# ─── STPI manifest endpoint ──────────────────────────────────────────────────
+@app.route("/__stpi_manifest__")
+def show_stpi_manifest():
+    # Rebuild STPI manifest so you always get the latest
+    build_stpi_manifest()
+    with _stpi_manifest_lock:
+        snap = dict(_stpi_manifest)
     return jsonify(snap)
 
 # ─── Background manifest builder ─────────────────────────────────────────────

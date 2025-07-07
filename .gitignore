@@ -20,7 +20,6 @@ env/
 .DS_Store
 # ignore generated thumbnails and raw images
 thumbs/
-static/images/
 # don’t check in our large thumbs cache
 thumbs_large/
 

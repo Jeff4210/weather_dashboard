@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}NOAA Data{% endblock %}
+
+{% block content %}
+<main>
+  <h1 class="page-title">NOAA Satellite Data</h1>
+  <p>Welcome to the NOAA page! Here you could embed maps, tables, or real-time feeds.</p>
+
+  <!-- Example placeholder gallery -->
+  <div class="index-grid">
+    <div class="index-section item">
+      <a href="#">
+        <div class="img-frame">
+          <img src="{{ url_for('static', filename='images/noaa1.jpg') }}" alt="NOAA Sample 1">
+        </div>
+        <span class="label">NOAA Sample 1</span>
+      </a>
+    </div>
+    <div class="index-section item">
+      <a href="#">
+        <div class="img-frame">
+          <img src="{{ url_for('static', filename='images/noaa2.jpg') }}" alt="NOAA Sample 2">
+        </div>
+        <span class="label">NOAA Sample 2</span>
+      </a>
+    </div>
+    <!-- …more … -->
+  </div>
+</main>
+{% endblock %}
