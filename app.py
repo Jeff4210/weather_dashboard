@@ -13,12 +13,17 @@ from flask import (
 )
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
-OUTPUT_BASE = os.getenv(
+OUTPUT_BASE = os.environ.get(
     "GOES_OUTPUT_BASE",
-    os.path.join(os.path.dirname(__file__), "static", "output", "goes19")
+    "/mnt/ssd/goes19-archive"
 )
-THUMB_BASE       = os.path.join(os.path.dirname(__file__), "static", "thumbs")
-LARGE_THUMB_BASE = os.path.join(os.path.dirname(__file__), "static", "thumbs_large")
+# Thumbnail directories on SSD
+THUMB_BASE = os.environ.get("THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs"))
+LARGE_THUMB_BASE = os.environ.get("LARGE_THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs_large"))
+
+# Ensure directories exist at startup
+os.makedirs(THUMB_BASE, exist_ok=True)
+os.makedirs(LARGE_THUMB_BASE, exist_ok=True)
 
 REGION_TITLES = {
     "fd": "Full-Disk (FD)",
