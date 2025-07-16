@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-import re          
+import re
 import json
 import glob
 import threading
@@ -13,17 +13,12 @@ from flask import (
 )
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
-OUTPUT_BASE = os.environ.get(
+OUTPUT_BASE = os.getenv(
     "GOES_OUTPUT_BASE",
-    "/mnt/ssd/goes19-archive"
+    os.path.join(os.path.dirname(__file__), "static", "output", "goes19")
 )
-# Thumbnail directories on SSD
-THUMB_BASE = os.environ.get("THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs"))
-LARGE_THUMB_BASE = os.environ.get("LARGE_THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs_large"))
-
-# Ensure directories exist at startup
-os.makedirs(THUMB_BASE, exist_ok=True)
-os.makedirs(LARGE_THUMB_BASE, exist_ok=True)
+THUMB_BASE       = os.path.join(os.path.dirname(__file__), "static", "thumbs")
+LARGE_THUMB_BASE = os.path.join(os.path.dirname(__file__), "static", "thumbs_large")
 
 
 REGION_TITLES = {
