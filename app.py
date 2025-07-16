@@ -2,6 +2,7 @@
 import os
 import re
 import json
+import logging
 import glob
 import threading
 import datetime
@@ -13,22 +14,20 @@ from flask import (
 )
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
-<<<<<<< HEAD
-OUTPUT_BASE = os.getenv(
+OUTPUT_BASE = os.environ.get(
     "GOES_OUTPUT_BASE",
-    os.path.join(os.path.dirname(__file__), "static", "output", "goes19")
+    "/mnt/ssd/goes19-archive"
 )
-THUMB_BASE       = os.path.join(os.path.dirname(__file__), "static", "thumbs")
-LARGE_THUMB_BASE = os.path.join(os.path.dirname(__file__), "static", "thumbs_large")
-=======
-OUTPUT_BASE = os.environ.get("GOES_OUTPUT_BASE") or os.path.join(
-    os.path.dirname(__file__),
-    "static",
-    "output",
-    "goes19"
-)
->>>>>>> 894a6e7
+# Thumbnail directories on SSD
+THUMB_BASE = os.environ.get("THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs"))
+LARGE_THUMB_BASE = os.environ.get("LARGE_THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs_large"))
 
+# Ensure directories exist at startup
+for path in (THUMB_BASE, LARGE_THUMB_BASE):
+    try:
+        os.makedirs(path, exist_ok=True)
+    except OSError as e:
+        logging.warning(f"Could not create thumbnail directory {path}: {e}")
 
 REGION_TITLES = {
     "fd": "Full-Disk (FD)",
@@ -179,7 +178,12 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 with app.app_context():
     for region in REGION_TITLES:
         region_root = os.path.join(OUTPUT_BASE, region)
-        app.logger.debug(f"DEBUG: {region_root} subfolders = {os.listdir(region_root)!r}")
+    try:
+        subfolders = os.listdir(region_root)
+    except OSError as e:
+        app.logger.warning(f"Could not list {region_root}: {e}")
+        subfolders = []
+    app.logger.debug(f"DEBUG: {region_root} subfolders = {subfolders!r}")
 # ─── Health-check endpoint ────────────────────────────────────────────────────
 @app.route("/ping")
 def ping():
@@ -232,7 +236,7 @@ def astro_index():
           ]
         },
         {
-          "filename": "Bode.png",
+          "filename": "bode.png",
           "title": "Bode’s Galaxy",
           "common": "M81",
           "blurb": "Bode’s Galaxy is a grand design spiral galaxy in Ursa Major.",
