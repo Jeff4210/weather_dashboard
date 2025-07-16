@@ -14,15 +14,10 @@ from flask import (
 )
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
-<<<<<<< HEAD
 OUTPUT_BASE = os.environ.get(
-=======
-OUTPUT_BASE = os.getenv(
->>>>>>> cc05c24 (Update navigation menu and satellites page)
     "GOES_OUTPUT_BASE",
     "/mnt/ssd/goes19-archive"
 )
-<<<<<<< HEAD
 # Thumbnail directories on SSD
 THUMB_BASE = os.environ.get("THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs"))
 LARGE_THUMB_BASE = os.environ.get("LARGE_THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs_large"))
@@ -33,16 +28,6 @@ for path in (THUMB_BASE, LARGE_THUMB_BASE):
         os.makedirs(path, exist_ok=True)
     except OSError as e:
         logging.warning(f"Could not create thumbnail directory {path}: {e}")
-=======
-THUMB_BASE       = os.path.join(os.path.dirname(__file__), "static", "thumbs")
-LARGE_THUMB_BASE = os.path.join(os.path.dirname(__file__), "static", "thumbs_large")
-OUTPUT_BASE = os.environ.get("GOES_OUTPUT_BASE") or os.path.join(
-    os.path.dirname(__file__),
-    "static",
-    "output",
-    "goes19"
-)
->>>>>>> cc05c24 (Update navigation menu and satellites page)
 
 REGION_TITLES = {
     "fd": "Full-Disk (FD)",
