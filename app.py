@@ -174,6 +174,14 @@ build_manifest()
 # ─── Flask app setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+# Astro thumbnails directory
+ASTRO_BASE = os.path.join(app.static_folder, 'astro')
+ASTRO_THUMB_BASE = os.path.join(app.static_folder, 'thumbs_astro')
+for path in (ASTRO_THUMB_BASE,):
+    try:
+        os.makedirs(path, exist_ok=True)
+    except OSError as e:
+        logging.warning(f"Could not create astro thumbnail directory {path}: {e}")
 # DEBUG: once, at startup
 with app.app_context():
     for region in REGION_TITLES:
@@ -351,7 +359,7 @@ def serve_thumb(filename):
 # ─── Serve large thumbs ─────────────────────────────────────────────────────────
 @app.route("/thumbnails_large/<path:filename>")
 def serve_large_thumb(filename):
-# build path to the original full-res image
+    # build path to the original full-res image
     # filename is e.g. "fd/ch02/2025-07-05/GOES19_FD_20250705T120021Z_clean.jpg"
     src_orig = os.path.join(OUTPUT_BASE, filename)
     if not os.path.isfile(src_orig):
@@ -359,6 +367,18 @@ def serve_large_thumb(filename):
     # generate an 800×800-max thumbnail from the original
     thumb_large = make_thumb(src_orig, LARGE_THUMB_BASE, size=(800,800), quality=95)
     folder, fname = os.path.split(thumb_large)
+    return send_from_directory(folder, fname, mimetype="image/jpeg")
+
+# ─── Serve astro thumbs ───────────────────────────────────────────────────────
+@app.route("/astro_thumbs/<path:filename>")
+def serve_astro_thumb(filename):
+    # Source astro image
+    src = os.path.join(ASTRO_BASE, filename)
+    if not os.path.isfile(src):
+        abort(404)
+    # Generate a 300×300 thumbnail under ASTRO_THUMB_BASE
+    thumb_path = make_thumb(src, ASTRO_THUMB_BASE, size=(300, 300), quality=95)
+    folder, fname = os.path.split(thumb_path)
     return send_from_directory(folder, fname, mimetype="image/jpeg")
 
 # ─── Region page (grid + toggles) ────────────────────────────────────────────
