@@ -126,27 +126,6 @@ nav.navbar .coming-soon .badge {
   vertical-align: middle;
 }
 
-/* ─── RESPONSIVE (STACK ON SMALL SCREENS) ──────────────────────────── */
-@media (max-width: 600px) {
-  nav.navbar ul.menu {
-    flex-direction: column;
-    background: rgba(0, 0, 0, 0.85);
-  }
-  nav.navbar ul.menu > li {
-    margin: 0;
-  }
-  nav.navbar ul.menu > li + li {
-    border-top: 1px solid #222;
-  }
-  nav.navbar ul.submenu {
-    position: static;
-    background: none;
-    padding-left: 1rem;
-    transform: none;
-    left: auto;
-  }
-}
-
 /* Full-screen centered “Coming Soon” pages */
 .basic-page {
   display: flex;
@@ -211,4 +190,65 @@ nav.navbar ul.menu > li > ul.submenu li a {
 nav.navbar ul.menu > li > ul.submenu li a:hover {
   background: rgba(0, 191, 255, 0.15);
   color: #00bfff;
+}
+/* Mobile menu: single row, hide dropdown to save space */
+@media (max-width: 768px) {
+  .navbar {
+    background: rgba(17,17,17,0.8);
+  }
+  .menu {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    /* overflow-x: auto; */  /* removed */
+    padding: 0.5rem 1rem;
+  }
+  .menu > li {
+    flex: none;
+    margin-right: 1rem;
+  }
+  .menu > li > a {
+    padding: 0.5rem;
+    white-space: nowrap;
+  }
+  /* hide submenus completely on mobile */
+  .submenu {
+    display: none !important;
+  }
+  nav.navbar ul.menu {
+    justify-content: space-evenly !important;
+  }
+}
+/* Mobile: streamlined top menu across all pages */
+@media (max-width: 768px) {
+  nav.navbar {
+    background: rgba(17,17,17,0.8);
+    /* Reduce navbar padding on mobile */
+    padding: 0.3rem 0.5rem !important;
+  }
+  nav.navbar .menu {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0.5rem 1rem;
+  }
+  nav.navbar .menu > li {
+    flex: none;
+    margin-right: 1rem;
+  }
+  /* Reduce link padding */
+  nav.navbar .menu > li > a {
+    padding: 0.5rem 1rem !important;
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+  /* hide all submenus on mobile to save space */
+  nav.navbar .submenu {
+    display: none !important;
+  }
+  /* Adjust body padding to match smaller navbar */
+  body {
+    padding-top: 4rem !important;
+  }
 }

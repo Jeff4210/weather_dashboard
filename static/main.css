@@ -938,3 +938,22 @@ body {
   margin: 0;
   font-size: 0.95rem;
 }
+/* Mobile menu tweaks (formerly in menu.css) */
+@media (max-width: 768px) {
+  .navbar { background: rgba(17,17,17,0.8); }
+  .menu {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0.5rem 1rem;
+  }
+  .menu > li {
+    flex: none;
+    margin-right: 1rem;
+  }
+  .menu > li > a {
+    padding: 0.5rem;
+    white-space: nowrap;
+  }
+  .submenu { display: none !important; }
+}

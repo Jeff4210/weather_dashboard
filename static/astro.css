@@ -32,3 +32,18 @@
   padding-left: 1rem;
   list-style: disc inside;
 }
+/* Mobile: stack astro-cards vertically */
+@media (max-width: 768px) {
+  .astro-card {
+    /* switch to vertical layout */
+    flex-direction: column;
+    max-width: 100%;
+    padding: 1rem;
+  }
+  .astro-card img {
+    /* full-width images */
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}
