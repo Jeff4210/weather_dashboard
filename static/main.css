@@ -804,3 +804,54 @@ main {
     margin: 0.5rem 0 !important;
   }
 }
+/* Home page menu styling */
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 1em 0;
+}
+.menu-item, .menu-parent {
+  font-weight: bold;
+  margin: 0.5em 0;
+  display: block;
+  text-decoration: none;
+  color: #333;
+}
+.menu-parent {
+  cursor: default;
+}
+.submenu {
+  list-style: none;
+  padding-left: 1em;
+  margin: 0.5em 0;
+}
+.submenu-item {
+  margin: 0.3em 0;
+  display: block;
+  text-decoration: none;
+  color: #555;
+}
+.submenu-item:hover {
+  color: #000;
+}
+.coming-soon {
+  color: #888;
+  font-style: italic;
+  cursor: default;
+}
+.badge {
+  background: #ddd;
+  border-radius: 0.3em;
+  padding: 0.1em 0.3em;
+  font-size: 0.8em;
+  margin-left: 0.3em;
+  vertical-align: middle;
+}
+/* Page background and content offset for navbar */
+body {
+  margin: 0;
+  padding-top: 3em; /* space for fixed navbar */
+  background: url("/static/images/stars.png") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+}

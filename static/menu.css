@@ -1,0 +1,214 @@
+/* Offset content for fixed navbar */
+body {
+  margin: 0;
+  padding-top: 6rem; /* space for navbar */
+  background: url("/static/images/stars.png") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+/* ─── NAVBAR BASE ─────────────────────────────────────────────────── */
+nav.navbar {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 1rem 2rem;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+nav.navbar ul.menu {
+  list-style: none;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+nav.navbar ul.menu > li {
+  position: relative;
+  margin: 0;
+  padding-bottom: 1rem;  /* increase hover zone */
+}
+
+nav.navbar ul.menu > li:last-child {
+  margin-right: 0;
+}
+
+nav.navbar ul.menu > li > a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 1.75rem 4rem; /* generous click area */
+  font-size: 1.1rem;
+  letter-spacing: 0.03em;
+  display: inline-block;
+  border-radius: 0.3rem;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+
+/* Add arrow only on items with a dropdown submenu */
+nav.navbar ul.menu > li:has(ul.submenu) > a::after {
+  content: " ▼";
+  font-size: 0.8rem;
+  margin-left: 0.3rem;
+}
+
+nav.navbar ul.menu > li > a:hover,
+nav.navbar ul.menu > li > a.active {
+  color: #00bfff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── DROPDOWN SUBMENU ─────────────────────────────────────────────── */
+nav.navbar ul.menu > li > ul.submenu {
+  visibility: hidden;
+  opacity: 0;
+  list-style: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 0.3rem;
+  padding: 0.5rem 0;
+  margin: 0;
+  min-width: 12rem;
+  white-space: nowrap;
+  text-align: center;
+  border-top: 3px solid #00bfff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  margin-top: 0.25rem;
+  transition: opacity 0.2s ease, visibility 0.2s ease 0.1s;
+}
+
+nav.navbar ul.menu > li:hover > ul.submenu {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+nav.navbar ul.submenu li {
+  margin-bottom: 1rem; /* spacing between items */
+}
+
+nav.navbar ul.submenu li a {
+  color: #ddd;
+  padding: 1.5rem 3rem; /* roomy submenu links */
+  display: inline-block;
+  margin: 0.5rem auto;
+  border-radius: 0.25rem;
+  transition: background-color 0.25s ease;
+}
+
+nav.navbar ul.submenu li a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #00bfff;
+}
+
+/* ─── “COMING SOON” BADGE ─────────────────────────────────────────── */
+nav.navbar .coming-soon {
+  color: #777;
+  font-style: italic;
+  position: relative;
+}
+
+nav.navbar .coming-soon .badge {
+  background: #555;
+  color: #eee;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.3rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+}
+
+/* ─── RESPONSIVE (STACK ON SMALL SCREENS) ──────────────────────────── */
+@media (max-width: 600px) {
+  nav.navbar ul.menu {
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.85);
+  }
+  nav.navbar ul.menu > li {
+    margin: 0;
+  }
+  nav.navbar ul.menu > li + li {
+    border-top: 1px solid #222;
+  }
+  nav.navbar ul.submenu {
+    position: static;
+    background: none;
+    padding-left: 1rem;
+    transform: none;
+    left: auto;
+  }
+}
+
+/* Full-screen centered “Coming Soon” pages */
+.basic-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: calc(100vh - 6rem);
+  padding-top: 3rem;
+}
+.basic-page h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+.basic-page p {
+  font-size: 1.5rem;
+  color: #ccc;
+}
+body {
+  margin: 0;
+  padding-top: 8rem; /* increased space for fixed navbar */
+  /* other styles */
+}
+/* ─── SPEECH-BUBBLE POINTER ───────────────────────────────────────── */
+nav.navbar ul.menu > li > ul.submenu {
+  /* remove border-top accent: */
+  border-top: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+
+  /* match trigger width: */
+  width: 100%;
+  left: 0;           /* align to left edge of parent li */
+  
+  /* softer corners + pointer: */
+  border-radius: 0.5rem;
+  position: absolute;
+  margin-top: 0.25rem;
+}
+nav.navbar ul.menu > li > ul.submenu::before {
+  content: "";
+  position: absolute;
+  top: -0.5rem;      /* just above dropdown */
+  left: 50%;         /* center under trigger */
+  transform: translateX(-50%);
+  border-width: 0.5rem 0.5rem 0 0.5rem;
+  border-style: solid;
+  border-color: rgba(0,0,0,0.85) transparent transparent transparent;
+}
+
+/* ─── FADE + SLIDE DOWN ───────────────────────────────────────────── */
+/* Removed animation and transform based fade/slide */
+
+/* ─── UNIFY LINK WIDTH & ALIGN TEXT ────────────────────────────────── */
+nav.navbar ul.menu > li > ul.submenu li a {
+  display: block;       /* full width */
+  text-align: left;
+  padding: 1rem 1.5rem;  /* consistent padding */
+}
+
+/* ─── HOVER HIGHLIGHT ──────────────────────────────────────────────── */
+nav.navbar ul.menu > li > ul.submenu li a:hover {
+  background: rgba(0, 191, 255, 0.15);
+  color: #00bfff;
+}

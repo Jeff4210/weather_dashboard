@@ -25,6 +25,7 @@ LARGE_THUMB_BASE = os.environ.get("LARGE_THUMB_BASE", os.path.join(OUTPUT_BASE, 
 os.makedirs(THUMB_BASE, exist_ok=True)
 os.makedirs(LARGE_THUMB_BASE, exist_ok=True)
 
+
 REGION_TITLES = {
     "fd": "Full-Disk (FD)",
     "m1": "Meso-1 (M1)",
@@ -197,9 +198,22 @@ def make_thumb(src_path, dst_base, size, quality):
         im.save(dst, "JPEG", quality=quality)
 
     return dst
+# ─── Astro index view ───────────────────────────────────────────────────────────────
+@app.route('/astro')
+def astro_index():
+    return render_template('astro_index.html')
+    
+@app.route('/satellites')
+def satellites_page():
+    return render_template('satellites.html')
+
+# ─── Home view ───────────────────────────────────────────────────────────────
+@app.route("/")
+def home():
+    return render_template("home.html")
 
 # ─── Index view ───────────────────────────────────────────────────────────────
-@app.route("/")
+@app.route("/goes")
 def index():
     manifest = get_manifest()
     sections = []

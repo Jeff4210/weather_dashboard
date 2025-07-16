@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
+</head>
+<body>
+  <header class="page-header">
+    Welcome to My Website
+  </header>
+
+  <nav class="navbar">
+    <ul class="menu">
+      <li class="menu-item">
+        <a href="/">🏠 Home</a>
+      </li>
+      <li>
+        <a href="/astro">🔭 Astrophotography</a>
+      </li>
+      <li>
+        <a href="/satellites">🛰️ Satellites</a>
+        <ul class="submenu">
+          <li><a href="/goes">🌍 GOES-19 Dashboard</a></li>
+          <li class="coming-soon">❄️ NOAA</li>
+          <li class="coming-soon">☀️ Meteosat</li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="basic-page">
+        <p>Coming Soon!</p>
+    </div>
+  </main>
+</body>
+</html>
