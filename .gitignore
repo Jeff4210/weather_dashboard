@@ -26,3 +26,6 @@ thumbs_large/
 
 # debug helper, not needed in repo
 debug.py
+static/output/
+static/thumbs/
+static/thumbs_large/
