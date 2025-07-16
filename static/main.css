@@ -855,3 +855,86 @@ body {
   background-size: cover;
   color: #fff;
 }
+/* Astro gallery: one item per row, image + info side by side */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  padding: 4rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  background: rgba(17,17,17,0.7);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .gallery-item {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.gallery-img {
+  flex: 0 0 300px;
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 600px) {
+  .gallery-img {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+.gallery-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.gallery-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  gap: 1rem;
+}
+
+.gallery-title {
+  font-size: 2rem;
+  color: #00bfff;
+  margin: 0;
+}
+
+.gallery-blurb {
+  font-size: 1.1rem;
+  color: #ddd;
+  line-height: 1.5;
+}
+
+.gallery-meta {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.gallery-date {
+  font-size: 0.95rem;
+}
+
+.gallery-facts {
+  list-style: inside disc;
+  padding-left: 1.25rem;
+  margin: 0;
+  font-size: 0.95rem;
+}
