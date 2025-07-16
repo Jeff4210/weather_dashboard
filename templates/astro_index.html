@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Astrophotography Gallery</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
+          <link rel="stylesheet" href="{{ url_for('static', filename='astro.css') }}">
 </head>
 <body>
   <header class="page-header">
@@ -19,7 +20,7 @@
       <li>
         <a href="/satellites">🛰️ Satellites</a>
         <ul class="submenu">
-            <li><a href="/goes">🌍 GOES-19 Dashboard</a></li>
+            <li><a href="/goes" class="active">🌍 GOES-19 Dashboard</a></li>
           <li class="coming-soon">❄️ NOAA <span class="badge">Coming Soon</span></li>
           <li class="coming-soon">☀️ Meteosat <span class="badge">Coming Soon</span></li>
         </ul>
@@ -28,9 +29,23 @@
   </nav>
 
   <main>
-    <div class="basic-page">
-      <p>Coming Soon!</p>
-    </div>
-  </main>
-</body>
-</html>
+     {% for item in gallery %}
+     <div class="astro-card">
+       <img src="{{ url_for('static', filename='astro/' + item.filename) }}"
+            alt="{{ item.title }}">
+
+       <div class="astro-details">
+         <h2>{{ item.title }} ({{ item.common }})</h2>
+         <p>{{ item.blurb }}</p>
+         <p class="taken">Taken on {{ item.date }}</p>
+         <ul class="astro-facts">
+           {% for fact in item.facts %}
+           <li>{{ fact }}</li>
+           {% endfor %}
+         </ul>
+       </div>
+     </div>
+     {% endfor %}
+   </main>
+ </body>
+ </html>
