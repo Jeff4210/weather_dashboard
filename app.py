@@ -13,12 +13,21 @@ from flask import (
 )
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
+<<<<<<< HEAD
 OUTPUT_BASE = os.getenv(
     "GOES_OUTPUT_BASE",
     os.path.join(os.path.dirname(__file__), "static", "output", "goes19")
 )
 THUMB_BASE       = os.path.join(os.path.dirname(__file__), "static", "thumbs")
 LARGE_THUMB_BASE = os.path.join(os.path.dirname(__file__), "static", "thumbs_large")
+=======
+OUTPUT_BASE = os.environ.get("GOES_OUTPUT_BASE") or os.path.join(
+    os.path.dirname(__file__),
+    "static",
+    "output",
+    "goes19"
+)
+>>>>>>> 894a6e7
 
 
 REGION_TITLES = {
@@ -38,6 +47,13 @@ CHANNEL_NAMES = {
     "FC":   "False Color Composite", "CUSTOMLUT":"Custom LUT"
 }
 
+# Mapping filenames to “Common Name (Messier#)”
+names = {
+    'Andromeda.png': "Andromeda Galaxy (M31)",
+    'Bode.png':       "Bode’s Galaxy (M81)",
+    'M13.png':        "Hercules Cluster (M13)",
+    'Orion.png':      "Orion Nebula (M42)",
+}
 # ─── In-memory manifest + lock ────────────────────────────────────────────────
 _manifest      = {}
 _manifest_lock = threading.Lock()
@@ -196,12 +212,81 @@ def make_thumb(src_path, dst_base, size, quality):
 # ─── Astro index view ───────────────────────────────────────────────────────────────
 @app.route('/astro')
 def astro_index():
-    return render_template('astro_index.html')
-    
-@app.route('/satellites')
-def satellites_page():
-    return render_template('satellites.html')
-
+    gallery = [
+        {
+          "filename": "Andromeda.png",
+          "title": "Andromeda Galaxy",
+          "common": "M31",
+          "blurb": "The Andromeda Galaxy is the nearest spiral galaxy to the Milky Way and the largest galaxy in the Local Group.",
+          "date": "September 24, 2024",
+          "facts": [
+              "Size: ~220,000 light-years in diameter",
+              "Distance: ~2.537 million light-years",
+              "Type: Spiral Galaxy",
+              "Apparent magnitude: 3.44",
+              "Constellation: Andromeda",
+              "Mass: ~1.5 × 10^12 M☉",
+              "Number of stars: ~1 trillion",
+              "Age: ~10 billion years",
+              "Visibility: Naked-eye visible from dark skies"
+          ]
+        },
+        {
+          "filename": "Bode.png",
+          "title": "Bode’s Galaxy",
+          "common": "M81",
+          "blurb": "Bode’s Galaxy is a grand design spiral galaxy in Ursa Major.",
+          "date": "July 13, 2025",
+          "facts": [
+              "Size: ~90,000 light-years in diameter",
+              "Distance: ~11.8 million light-years",
+              "Type: Spiral Galaxy",
+              "Apparent magnitude: 6.94",
+              "Constellation: Ursa Major",
+              "Mass: ~2.5 × 10^11 M☉",
+              "Number of stars: ~250 billion",
+              "Age: ~12 billion years",
+              "Visibility: Visible with binoculars"
+          ]
+        },
+        {
+          "filename": "M13.png",
+          "title": "Hercules Cluster",
+          "common": "M13",
+          "blurb": "M13, also known as the Great Hercules Cluster, is a bright globular cluster in Hercules.",
+          "date": "July 9, 2025",
+          "facts": [
+              "Diameter: ~145 light-years",
+              "Distance: ~22,200 light-years",
+              "Type: Globular Cluster",
+              "Apparent magnitude: 5.8",
+              "Constellation: Hercules",
+              "Number of stars: ~300,000",
+              "Age: ~11.65 billion years",
+              "Metallicity [Fe/H]: –1.53",
+              "Visibility: Visible with small telescope"
+          ]
+        },
+        {
+          "filename": "Orion.png",
+          "title": "Orion Nebula",
+          "common": "M42",
+          "blurb": "The Orion Nebula is a diffuse nebula situated in Orion’s Sword, a star-forming region.",
+          "date": "October 2, 2024",
+          "facts": [
+              "Size: ~24 light-years across",
+              "Distance: ~1,344 light-years",
+              "Type: Diffuse Nebula",
+              "Apparent magnitude: 4.0",
+              "Constellation: Orion",
+              "Contains: Trapezium Cluster",
+              "Star-forming region: Active",
+              "Gas composition: Mostly hydrogen",
+              "Visibility: Naked-eye visible"
+          ]
+        }
+    ]
+    return render_template('astro_index.html', gallery=gallery)
 # ─── Home view ───────────────────────────────────────────────────────────────
 @app.route("/")
 def home():
@@ -231,6 +316,11 @@ def index():
         })
 
     return render_template("index.html", sections=sections)
+    
+@app.route('/satellites')
+def satellites_page():
+    return render_template('satellites.html')
+
 # ─── Serve master images ───────────────────────────────────────────────────────
 @app.route("/images/<region>/<channel>/<date>/<filename>")
 def serve_image(region, channel, date, filename):
