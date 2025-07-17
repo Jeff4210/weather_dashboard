@@ -252,3 +252,22 @@ nav.navbar ul.menu > li > ul.submenu li a:hover {
     padding-top: 4rem !important;
   }
 }
+/* hide submenus by default (mobile & desktop) */
+.menu .has-children .submenu {
+  display: none;
+}
+
+/* when .open is toggled, show it */
+.menu .has-children.open .submenu {
+  display: block;
+}
+
+/* optional: rotate arrow when open */
+.menu .has-children > a {
+  position: relative;
+}
+.menu .has-children.open > a::after {
+  content: "▲";
+  position: absolute;
+  right: 0.5em;
+}

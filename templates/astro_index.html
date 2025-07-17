@@ -15,19 +15,19 @@
   </header>
 
   <nav class="navbar">
-    <ul class="menu">
-      <li class="menu-item"><a href="/">🏠 Home</a></li>
-      <li><a href="/astro" class="active">🔭 Astrophotography</a></li>
-      <li>
-        <a href="/satellites">🛰️ Satellites</a>
-        <ul class="submenu">
-            <li><a href="/goes" class="active">🌍 GOES-19 Dashboard</a></li>
-          <li class="coming-soon">❄️ NOAA <span class="badge">Coming Soon</span></li>
-          <li class="coming-soon">☀️ Meteosat <span class="badge">Coming Soon</span></li>
-        </ul>
-      </li>
-    </ul>
-  </nav>
+      <ul class="menu">
+        <li class="menu-item"><a href="/">🏠 Home</a></li>
+        <li><a href="/astro" class="active">🔭 Astrophotography</a></li>
+        <li class="has-children">
+          <a href="/satellites">🛰️ Satellites ▼</a>
+          <ul class="submenu">
+            <li><a href="/goes">🌍 GOES-19 Dashboard</a></li>
+            <li class="coming-soon">❄️ NOAA <span class="badge">Coming Soon</span></li>
+            <li class="coming-soon">☀️ Meteosat <span class="badge">Coming Soon</span></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
 
   <main>
      {% for item in gallery %}
@@ -49,5 +49,6 @@
      </div>
      {% endfor %}
    </main>
+  <script src="{{ url_for('static', filename='js/menu-toggle.js') }}"></script>
  </body>
  </html>
