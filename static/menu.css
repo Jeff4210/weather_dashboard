@@ -271,3 +271,14 @@ nav.navbar ul.menu > li > ul.submenu li a:hover {
   position: absolute;
   right: 0.5em;
 }
+/* Show a ▼ after any parent link */
+.menu .has-children > a::after {
+  content: " ▼";
+  font-size: 0.8em;
+  margin-left: 0.2em;
+}
+
+/* When open, flip to ▲ */
+.menu .has-children.open > a::after {
+  content: " ▲";
+}
