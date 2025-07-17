@@ -31,11 +31,12 @@
 
   <main>
      {% for item in gallery %}
-     <div class="astro-card">
-       <img src="{{ url_for('static', filename='astro/' + item.filename) }}"
-            alt="{{ item.title }}">
-
-       <div class="astro-details">
+    <div class="astro-card">
+      <a href="{{ url_for('static', filename='astro/' + item.filename) }}" target="_blank">
+        <img src="{{ url_for('serve_astro_thumb', filename=item.filename) }}"
+             alt="{{ item.title }}">
+      </a>
+      <div class="astro-details">
          <h2>{{ item.title }} ({{ item.common }})</h2>
          <p>{{ item.blurb }}</p>
          <p class="taken">Taken on {{ item.date }}</p>

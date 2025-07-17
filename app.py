@@ -12,6 +12,7 @@ from flask import (
     Flask, render_template, send_from_directory, abort,
     url_for, request, current_app, jsonify
 )
+from flask_cors import CORS
 from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
 OUTPUT_BASE = os.environ.get(
@@ -174,6 +175,13 @@ build_manifest()
 # ─── Flask app setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+# allow any origin to GET from /thumbnails_large/*
+CORS(app, resources={
+  r"/thumbnails_large/*": {"origins": "*"},
+  r"/thumbs/*":            {"origins": "*"},
+  r"/thumbs_large/*":      {"origins": "*"}
+})
 # Astro thumbnails directory
 ASTRO_BASE = os.path.join(app.static_folder, 'astro')
 ASTRO_THUMB_BASE = os.path.join(app.static_folder, 'thumbs_astro')
@@ -369,18 +377,6 @@ def serve_large_thumb(filename):
     folder, fname = os.path.split(thumb_large)
     return send_from_directory(folder, fname, mimetype="image/jpeg")
 
-# ─── Serve astro thumbs ───────────────────────────────────────────────────────
-@app.route("/astro_thumbs/<path:filename>")
-def serve_astro_thumb(filename):
-    # Source astro image
-    src = os.path.join(ASTRO_BASE, filename)
-    if not os.path.isfile(src):
-        abort(404)
-    # Generate a 300×300 thumbnail under ASTRO_THUMB_BASE
-    thumb_path = make_thumb(src, ASTRO_THUMB_BASE, size=(300, 300), quality=95)
-    folder, fname = os.path.split(thumb_path)
-    return send_from_directory(folder, fname, mimetype="image/jpeg")
-
 # ─── Region page (grid + toggles) ────────────────────────────────────────────
 @app.route("/<region>")
 def region_page(region):
@@ -416,6 +412,29 @@ def region_page(region):
         region_name=REGION_TITLES.get(r, r),
         files_info=files_info
     )
+# ─── Serve astro thumbs ───────────────────────────────────────────────────────
+@app.route("/astro_thumbs/<path:filename>")
+def serve_astro_thumb(filename):
+    src = os.path.join(ASTRO_BASE, filename)
+    if not os.path.isfile(src):
+        abort(404)
+
+    # Ensure thumbnails folder exists
+    os.makedirs(ASTRO_THUMB_BASE, exist_ok=True)
+
+    dst = os.path.join(ASTRO_THUMB_BASE, filename)
+    # Only create thumbnail if it doesn't already exist
+    if not os.path.exists(dst):
+        try:
+            from PIL import Image
+            img = Image.open(src)
+            img.thumbnail((800, 800))
+            img.save(dst, quality=95)
+        except Exception as e:
+            app.logger.error(f"Failed to thumbnail {src}: {e}")
+            abort(500)
+
+    return send_from_directory(ASTRO_THUMB_BASE, filename, mimetype="image/jpeg")
 # ─── Explore page (scrubber timeline) ────────────────────────────────────────
 @app.route("/<region>/explore/<channel>")
 def explore(region, channel):

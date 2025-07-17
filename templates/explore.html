@@ -12,18 +12,20 @@
   </div>
 
   <h2 class="explore-title">{{ channel_name }} in {{ region_name }}</h2>
-
-  <div class="explore-image-container">
-    <a id="scrub-link" href="#" target="_blank" rel="noopener">
-      <img
-        id="scrub-img"
-        src="{{ history[0].clean }}"
-        alt="{{ history[0].time }}"
-        loading="lazy"
-      >
-    </a>
-  </div>
-
+<div class="explore-image-container">
+  <a id="scrub-link" href="#" target="_blank" rel="noopener">
+    <!-- CANVAS for high-performance drawing -->
+    <canvas id="scrub-canvas" width="800" height="800" aria-label="{{ history[0].time }}"></canvas>
+    <!-- fallback <img> if canvas isn’t supported -->
+    <img
+      id="scrub-img"
+      src="{{ history[0].clean }}"
+      alt="{{ history[0].time }}"
+      loading="lazy"
+      style="display:none;"
+    >
+  </a>
+</div>
   {# ——— everything below is now inside the glass pill ——— #}
   <div class="timeline-controls">
   <div class="mobile-controls">
@@ -60,72 +62,121 @@
 
 {% block scripts %}
 <script>
-  const history   = {{ history|tojson }};
-  const img       = document.getElementById('scrub-img');
-  const link      = document.getElementById('scrub-link');
-  const range     = document.getElementById('time-range');
-  const label     = document.getElementById('time-label');
-  const playBtn   = document.getElementById('play-pause');
-  const speed     = document.getElementById('playback-speed');
-  const mapBtn    = document.getElementById('map-btn');
-  const enhBtn    = document.getElementById('enh-btn');
-  const iconPath  = document.getElementById('icon-path');
+  // ── Worker & cache setup ─────────────────────────────────────────────────
+  const frameWorker     = new Worker("{{ url_for('static', filename='js/frameWorker.js') }}");
+  const frameImageCache = new Map();
+
+  frameWorker.onmessage = ({ data }) => {
+    const { frameUrl, buffer, type, error } = data;
+    if (error) {
+      console.error(`Frame fetch failed for ${frameUrl}:`, error);
+      return;
+    }
+    // Recreate a Blob from the ArrayBuffer, then an Image
+    const blob = new Blob([buffer], { type });
+    const imgObj = new Image();
+    imgObj.src = URL.createObjectURL(blob);
+    frameImageCache.set(frameUrl, imgObj);
+  };
+
+  // ── DOM refs & state ──────────────────────────────────────────────────────
+  const canvas = document.getElementById('scrub-canvas');
+  const ctx    = canvas.getContext('2d');
+  const link   = document.getElementById('scrub-link');
+  const range  = document.getElementById('time-range');
+  const label  = document.getElementById('time-label');
+  const play   = document.getElementById('play-pause');
+  const speed  = document.getElementById('playback-speed');
+  const mapBtn = document.getElementById('map-btn');
+  const enhBtn = document.getElementById('enh-btn');
+  const icon   = document.getElementById('icon-path');
+  const history= {{ history|tojson }};
 
   let intervalId = null;
   let isPlaying  = false;
   let mapOn      = false;
   let enhOn      = false;
 
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function requestFrame(url) {
+    if (!frameImageCache.has(url)) {
+      frameWorker.postMessage({ frameUrl: url });
+    }
+  }
+
+  function drawToCanvas(imgObj) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+  }
+
+  function renderFrame(url) {
+    const imgObj = frameImageCache.get(url);
+    if (imgObj && imgObj.complete) {
+      drawToCanvas(imgObj);
+    } else {
+      // fallback: kick off a fetch and draw once loaded
+      const tmp = new Image();
+      tmp.onload = () => drawToCanvas(tmp);
+      tmp.src = url;
+      requestFrame(url);
+    }
+  }
+
   function thumbToMaster(url) {
     return url.replace('/thumbnails_large/', '/images/');
   }
 
+  function getFrameUrl(idx) {
+    const i = ((idx % history.length) + history.length) % history.length;
+    return history[i].clean;
+  }
+
+  // ── Main update logic ─────────────────────────────────────────────────────
   function updateImage() {
-    const i = +range.value;
+    const i     = +range.value;
     const frame = history[i];
     label.textContent = frame.time;
 
     let thumb = frame.clean;
-    if (mapOn && enhOn && frame.enhanced_map)    thumb = frame.enhanced_map;
-    else if (mapOn && frame.map)                 thumb = frame.map;
-    else if (enhOn && frame.enhanced_clean)      thumb = frame.enhanced_clean;
+    if (mapOn && enhOn && frame.enhanced_map) thumb = frame.enhanced_map;
+    else if (mapOn && frame.map)               thumb = frame.map;
+    else if (enhOn && frame.enhanced_clean)    thumb = frame.enhanced_clean;
 
-    img.src  = thumb;
+    renderFrame(thumb);
     link.href = thumbToMaster(thumb);
 
-    // update thermal fill percentage
+    const sp   = +speed.value;
+    const step = sp >= 16 ? 4 : sp >= 8 ? 2 : 1;
+    for (let j = 1; j <= 5; j++) {
+      requestFrame(getFrameUrl(i + j * step));
+    }
+
     const pct = (i / (history.length - 1)) * 100;
     range.style.setProperty('--pct', pct + '%');
   }
 
+  // ── Play/Pause ────────────────────────────────────────────────────────────
   function togglePlay() {
     isPlaying = !isPlaying;
-    iconPath.setAttribute('d',
+    icon.setAttribute('d',
       isPlaying
-        ? 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'  // pause icon
-        : 'M8 5v14l11-7z'                    // play icon
+        ? 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'  // pause
+        : 'M8 5v14l11-7z'                    // play
     );
+    clearInterval(intervalId);
     if (isPlaying) {
       intervalId = setInterval(() => {
         range.value = (+range.value + 1) % history.length;
         updateImage();
-      }, 1000 / speed.value);
-    } else {
-      clearInterval(intervalId);
+      }, 1000 / +speed.value);
     }
   }
 
-  playBtn .addEventListener('click', togglePlay);
-  speed  .addEventListener('change', () => {
-    if (isPlaying) {
-      clearInterval(intervalId);
-      intervalId = setInterval(() => {
-        range.value = (+range.value + 1) % history.length;
-        updateImage();
-      }, 1000 / speed.value);
-    }
+  // ── Event listeners ───────────────────────────────────────────────────────
+  play .addEventListener('click', togglePlay);
+  speed.addEventListener('change', () => {
+    if (isPlaying) togglePlay(), togglePlay();  // restart at new rate
   });
-
   mapBtn.addEventListener('click', () => {
     mapOn = !mapOn;
     mapBtn.classList.toggle('active', mapOn);
@@ -138,15 +189,21 @@
   });
   range.addEventListener('input', updateImage);
   range.addEventListener('input', e => {
-      // calculate fill percent (0–100)
-      const pct = (+e.target.value / (history.length - 1)) * 100;
-      // shove it into the --pct variable on the slider
-      e.target.style.setProperty('--pct', pct + '%');
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-      // push initial percentage so the CSS fill shows up on load
-      const initPct = (range.value / (history.length - 1)) * 100;
-      range.style.setProperty('--pct', initPct + '%');
-      updateImage();
-    });</script>
+    const pct = (+e.target.value / (history.length - 1)) * 100;
+    e.target.style.setProperty('--pct', pct + '%');
+  });
+
+  // ── On load ───────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    // initial draw
+    const initPct = (range.value / (history.length - 1)) * 100;
+    range.style.setProperty('--pct', initPct + '%');
+    updateImage();
+
+    // warm up the first few frames
+    for (let j = 1; j <= 5; j++) {
+      requestFrame(getFrameUrl(j));
+    }
+  });
+</script>
 {% endblock %}
