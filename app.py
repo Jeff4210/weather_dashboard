@@ -307,6 +307,12 @@ def astro_index():
         }
     ]
     return render_template('astro_index.html', gallery=gallery)
+    
+# ─── Contact page ─────────────────────────────────────────────────────────────
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
 # ─── Home view ───────────────────────────────────────────────────────────────
 @app.route("/")
 def home():

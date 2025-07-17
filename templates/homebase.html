@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <button class="navbar-toggle" onclick="document.querySelector('.menu').classList.toggle('show')">☰</button>
+    <nav class="navbar">
+      <ul class="menu{% if request.path %}{{ ' show' if request.path else '' }}{% endif %}">
+        <li>
+          <a href="/"
+             class="{{ 'active' if request.path == '/' else '' }}">
+            🏠 Home
+          </a>
+        </li>
+        <li>
+          <a href="/astro"
+             class="{{ 'active' if request.path.startswith('/astro') else '' }}">
+            🔭 Astrophotography
+          </a>
+        </li>
+        <li class="has-children">
+          <a href="/satellites"
+             class="{{ 'active' if request.path.startswith('/satellites') else '' }}">
+            🛰️ Satellites
+          </a>
+          <ul class="submenu">
+            <li class="goes-dashboard">
+              <a href="/goes">
+                <div class="goes-text">
+                  <h1>🌍 GOES-19 Dashboard</h1>
+                </div>
+              </a>
+            </li>
+            <li class="coming-soon">❄️ NOAA <span class="badge">Coming Soon</span></li>
+            <li class="coming-soon">☀️ Meteosat <span class="badge">Coming Soon</span></li>
+          </ul>
+        </li>
+        <li>
+          <a href="/contact"
+             class="{{ 'active' if request.path.startswith('/contact') else '' }}">
+            ✉️ Contact
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block scripts %}
+    <script src="{{ url_for('static', filename='js/menu-toggle.js') }}"></script>
+  {% endblock %}
+</body>
+</html>
