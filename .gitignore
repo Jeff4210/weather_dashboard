@@ -1,7 +1,7 @@
 # ignore all local thumbnails and mounted output
-static/output/
-static/thumbs/
-static/thumbs_large/
+output/
+thumbs/
+thumbs_large/
 # Python
 __pycache__/
 *.py[cod]
@@ -18,10 +18,16 @@ env/
 
 # macOS
 .DS_Store
+<<<<<<< HEAD
 # ignore generated thumbnails and raw images
 thumbs/
 # don’t check in our large thumbs cache
 thumbs_large/
+=======
+>>>>>>> origin/main
 
 # debug helper, not needed in repo
 debug.py
+static/output/
+static/thumbs/
+static/thumbs_large/

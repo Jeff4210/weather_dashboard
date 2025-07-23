@@ -1,0 +1,49 @@
+/* static/astro.css */
+.astro-card {
+  display: flex;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 2rem auto;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 1rem;
+  border-radius: 8px;
+}
+.astro-card img {
+  flex: 0 0 auto;
+  width: 550px;
+  height: auto;
+  border-radius: 8px;
+  margin-right: 1rem;
+}
+.astro-details {
+  flex: 1 1 auto;
+  color: #fff;
+}
+.astro-details h2 {
+  color: #00c0ff;
+  margin-top: 0;
+}
+.astro-details .taken {
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+.astro-facts {
+  margin: 0;
+  padding-left: 1rem;
+  list-style: disc inside;
+}
+/* Mobile: stack astro-cards vertically */
+@media (max-width: 768px) {
+  .astro-card {
+    /* switch to vertical layout */
+    flex-direction: column;
+    max-width: 100%;
+    padding: 1rem;
+  }
+  .astro-card img {
+    /* full-width images */
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}

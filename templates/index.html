@@ -7,11 +7,53 @@
     <title>Blue Marble 🔭🛰️</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}" />
   </head>
   <body>
     <header class="index-header">
-      Blue Marble 🔭🛰️
+      GOES-19
     </header>
+
+    <nav class="navbar">
+      <ul class="menu">
+        <li>
+          <a href="/"
+             class="{{ 'active' if request.path == '/' else '' }}">
+            🏠 Home
+          </a>
+        </li>
+        <li>
+          <a href="/astro"
+             class="{{ 'active' if request.path.startswith('/astro') else '' }}">
+            🔭 Astrophotography
+          </a>
+        </li>
+        <li class="has-children">
+          <a href="/satellites"
+             class="{{ 'active' if request.path.startswith('/satellites') else '' }}">
+            🛰️ Satellites
+          </a>
+          <ul class="submenu">
+            <li class="goes-dashboard">
+              <a href="/goes">
+                <div class="goes-text">
+                  <h1>🌍 GOES-19 Dashboard</h1>
+                </div>
+              </a>
+            </li>
+            <li class="coming-soon">❄️ NOAA <span class="badge">Coming Soon</span></li>
+            <li class="coming-soon">☀️ Meteosat <span class="badge">Coming Soon</span></li>
+          </ul>
+        </li>
+        <li>
+          <a href="/contact"
+             class="{{ 'active' if request.path.startswith('/contact') else '' }}">
+            ✉️ Contact
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </header>
 
     <main>
       {% if sections %}

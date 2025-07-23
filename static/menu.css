@@ -1,0 +1,413 @@
+/ * Offset content for fixed navbar */
+body {
+  margin: 0;
+  padding-top: 6rem; /* space for navbar */
+  background: url("/static/images/stars.png") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  font-family: sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* ─── NAVBAR BASE ─────────────────────────────────────────────────── */
+nav.navbar {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 1rem 2rem;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+nav.navbar ul.menu {
+  list-style: none;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+nav.navbar ul.menu > li {
+  position: relative;
+}
+
+nav.navbar ul.menu > li.has-children {
+  position: relative;
+  overflow: visible;
+}
+
+nav.navbar ul.menu > li.has-children > ul.submenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  margin-top: -4px;
+  left: 0;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 0.5rem 0;
+  border-radius: 0.3rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+nav.navbar ul.menu > li.has-children:hover > ul.submenu {
+  display: block;
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+}
+
+nav.navbar ul.menu > li.has-children > a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  display: inline-block;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+nav.navbar ul.menu > li > a:hover,
+nav.navbar ul.menu > li > a.active {
+  color: #00bfff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dropdown arrow indicator */
+nav.navbar ul.menu > li.has-children > a::after {
+  content: " ▼";
+  display: inline-block;
+  margin-left: 0.3em;
+  transition: transform 0.2s ease;
+}
+
+/* Rotate arrow when open */
+nav.navbar ul.menu > li.has-children.open > a::after {
+  transform: rotate(180deg);
+}
+
+/* Force submenu open when `.open` is on the LI */
+nav.navbar ul.menu > li.has-children.open > ul.submenu {
+  display: block;
+  z-index: 999;
+  pointer-events: auto;
+}
+
+/* ─── MOBILE LAYOUT ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .navbar-toggle {
+    display: block;
+    position: fixed;
+    top: 1rem;
+  }
+
+  nav.navbar ul.menu {
+    flex-direction: column;
+    align-items: flex-start;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 1rem;
+    width: 100%;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+    position: absolute;
+    top: 100%;
+  }
+
+  nav.navbar ul.menu > li {
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+
+  nav.navbar ul.menu > li > a {
+    font-size: 1rem;       /* normalize mobile font size */
+    padding: 0.75rem 1rem;
+    width: 100%;
+  }
+
+  nav.navbar ul.menu > li.has-children > ul.submenu {
+    position: static;
+    width: 100%;
+    background: rgba(0,0,0,0.85);
+    margin: 0;
+    padding: 0.5rem 0;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+  }
+  nav.navbar ul.menu li.has-children.open > ul.submenu {
+    display: block !important;
+    max-height: 1200px;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    margin-top: 0.5rem;
+  }
+  /* indent submenu items */
+  nav.navbar ul.menu > li.has-children > ul.submenu li a {
+    padding-left: 1rem;
+    font-size: 0.9rem;    /* slightly smaller for submenu */
+  }
+
+  /* ─── MOBILE MENU ANIMATION ───────────────────────────────────────────── */
+  nav.navbar ul.menu {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+  }
+
+  nav.navbar ul.menu.show {
+    position: absolute;
+    top: 6rem; /* Adjust this to drop menu further */
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    pointer-events: auto;
+    padding-top: 1rem;
+  }
+  /* Remove extra space below the parent item on mobile */
+  nav.navbar ul.menu > li.has-children {
+    margin-bottom: 0;
+  }
+}
+
+/* Hide hover-on-mobile entirely */
+/* nav.navbar ul.menu > li.has-children:hover > ul.submenu {
+  display: none;
+} */
+
+/* ─── “Coming Soon” BADGE ─────────────────────────────────────────── */
+nav.navbar .coming-soon {
+  color: #777;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+nav.navbar .coming-soon .badge {
+  background: #555;
+  color: #eee;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.3rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+}
+/* Tighten submenu item spacing and font */
+nav.navbar ul.menu > li.has-children > ul.submenu li {
+  margin-bottom: 0.5rem;
+  text-align: left;
+  padding: 0.25rem 0;
+}
+nav.navbar ul.menu > li.has-children > ul.submenu li a {
+  font-size: 1rem;
+  line-height: 1.2;
+  padding: 0.75rem 1.5rem;
+  white-space: nowrap;
+}
+
+/* Expand parent hover zone to reduce accidental closing */
+nav.navbar ul.menu > li.has-children {
+  padding-bottom: 0.5rem;   /* larger hover zone so menu doesn’t vanish */
+}
+/* ─── DROPDOWN SUBMENU ITEM SPACING ─────────────────────────────────── */
+nav.navbar ul.menu > li.has-children > ul.submenu li {
+  margin-bottom: 0.5rem;    /* add breathing room between items */
+}
+
+/* ─── DROPDOWN LINK STYLING ────────────────────────────────────────── */
+nav.navbar ul.menu > li.has-children > ul.submenu li a {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  padding: 0.4rem 1rem;
+  white-space: nowrap;
+  color: #ddd;
+  transition: background-color 0.2s ease;
+  text-align: left;
+  justify-content: flex-start;
+}
+nav.navbar ul.menu > li.has-children > ul.submenu li a:hover {
+  background-color: rgba(255,255,255,0.1);
+  color: #00bfff;
+}
+
+/* ─── PARENT ITEM PAD/BREATHING ROOM ───────────────────────────────── */
+nav.navbar ul.menu > li.has-children {
+  padding-bottom: 0.5rem;   /* larger hover zone so menu doesn’t vanish */
+}
+
+/* GOES-19 Dashboard dropdown: force left-aligned, block, full-width, both desktop and mobile */
+nav.navbar ul.menu > li.has-children > ul.submenu li.goes-dashboard {
+  display: block;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: left;
+  list-style: none;
+}
+nav.navbar ul.menu > li.has-children > ul.submenu li.goes-dashboard a {
+  display: block;
+  text-align: left;
+  width: 100%;
+  padding: 0.4rem 0rem;
+  margin: 0;
+}
+nav.navbar ul.menu > li.has-children > ul.submenu li.goes-dashboard h1 {
+  font-size: 0.95rem;
+  margin: 0 0 0.25rem 0 !important;
+  padding: 0 !important;
+  color: #fff;
+}
+nav.navbar ul.menu > li.has-children > ul.submenu li.goes-dashboard p {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Hamburger toggle button styles */
+.navbar-toggle {
+  font-size: 2.5rem;
+  background: none;
+  border: none;
+  color: white;
+  z-index: 1001;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 1rem;
+  padding: 0.5rem;
+  margin: 0;
+  display: none;
+}
+
+/* Remove the pseudo-element if the button already contains the icon directly */
+.navbar-toggle::before {
+  content: "";
+}
+
+@media (max-width: 768px) {
+  body.menu-scrolling nav.navbar ul.menu {
+    opacity: 0 !important;
+    max-height: 0 !important;
+    pointer-events: none;
+  }
+  .navbar-toggle {
+    display: block;
+  }
+}
+  
+/* Show menu when navbar has .expanded on mobile */
+@media (max-width: 768px) {
+  nav.navbar.expanded ul.menu {
+    display: flex;
+    flex-direction: column;
+    max-height: 1200px;
+    overflow: visible;
+    opacity: 1;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    position: absolute;
+    top: 3rem;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 9999;
+    padding: 1rem 0;
+  }
+}
+
+/* Restore full visibility of navbar menu on desktop and control submenu open state */
+@media (min-width: 769px) {
+  nav.navbar ul.menu {
+    display: flex !important;
+    opacity: 1 !important;
+    max-height: none !important;
+    position: static !important;
+    pointer-events: auto !important;
+  }
+
+  nav.navbar ul.menu > li.has-children {
+    position: relative;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  nav.navbar ul.menu > li.has-children > ul.submenu {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    position: absolute;
+    top: 100%;
+    margin-top: -4px;
+    left: 0;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 0.5rem 0;
+    border-radius: 0.3rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+  }
+
+  nav.navbar ul.menu > li.has-children:hover > ul.submenu {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    max-height: 1000px !important;
+    pointer-events: auto !important;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10000;
+    transform: none !important;
+    width: auto;
+  }
+
+  nav.navbar ul.menu > li.has-children:hover {
+    overflow: visible !important;
+  }
+
+  nav.navbar ul.menu > li.has-children.open > ul.submenu {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    max-height: 1000px !important;
+    pointer-events: auto !important;
+    top: 100%;
+    transform: translateY(0);
+    z-index: 9999;
+  }
+
+  /* Ensure .show on desktop doesn’t override desktop layout */
+  nav.navbar ul.menu.show {
+    display: flex !important;
+    position: static !important;
+    opacity: 1 !important;
+    max-height: none !important;
+  }
+
+  /* Animate arrow on desktop hover */
+  nav.navbar ul.menu > li.has-children > a::after {
+    transition: transform 0.2s ease;
+  }
+  nav.navbar ul.menu > li.has-children:hover > a::after {
+    transform: rotate(180deg);
+  }
+
+  /* Normalize desktop link sizes */
+  nav.navbar ul.menu > li > a {
+    font-size: 1rem;         /* slightly smaller text */
+    padding: 0.75rem 1.5rem; /* tighter padding */
+  }
+}
