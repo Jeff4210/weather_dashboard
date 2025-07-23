@@ -17,7 +17,7 @@ from PIL import Image
 # ─── Configuration ────────────────────────────────────────────────────────────
 OUTPUT_BASE = os.environ.get(
     "GOES_OUTPUT_BASE",
-    "/mnt/ssd/goes19-archive"
+    "/mnt/ssd"
 )
 # Thumbnail directories on SSD
 THUMB_BASE = os.environ.get("THUMB_BASE", os.path.join(OUTPUT_BASE, "thumbs"))

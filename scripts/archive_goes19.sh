@@ -1,16 +1,21 @@
 #!/bin/bash
 
-SOURCE="/home/jeff/weather/output/goes19/"
-DEST="/mnt/ssd/goes19-archive/"
-MINUTES_OLD=3
+SOURCE="/home/jeff/weather/output/goes19"
+DEST="/mnt/ssd/goes19-archive"
+ARCHIVE_WINDOW_MINUTES=70
+LOG="/home/jeff/logs/archive_goes19.log"
 
-echo "[INFO] Starting archive at $(date)"
+mkdir -p "$DEST"
+echo "[START] $(date)" >> "$LOG"
 
-# Find image files older than X minutes and rsync them
-find "$SOURCE" -type f -mmin +$MINUTES_OLD -print0 |
-  rsync -av --remove-source-files --files-from=- --from0 "$SOURCE" "$DEST"
+cd "$SOURCE" || exit 1
 
-# Remove empty directories from spacepi mount
-find "$SOURCE" -type d -empty -delete
-
-echo "[INFO] Archive complete at $(date)"
+find . -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \) \
+    -mmin -"$ARCHIVE_WINDOW_MINUTES" -size +10k -print0 \
+| while IFS= read -r -d '' file; do
+    src="$file"
+    dest="$DEST/$file"
+    mkdir -p "$(dirname "$dest")"
+    rsync -a --remove-source-files --ignore-missing-args "$src" "$dest" \
+      && echo "[MOVED] $src → $dest" >> "$LOG"
+done
